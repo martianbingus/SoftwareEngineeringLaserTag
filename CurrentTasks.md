@@ -3,6 +3,7 @@
 [ ] Create player entry screen
 [ ] Link database to application, add two players via application
 [ ] Set up udp sockets, broadcast equipment codes after each player addition
+      Use 127.0.0.1 aka loopback address
 [ ] Have option to select different network for udp sockets
 [ ] Continue to make status reports every Thursday in Slack
 [ ] Make at least one task assignment in Trello for each team member
@@ -11,3 +12,4 @@
 [ ] Each team member is to make at least one programming commit to github for this sprint
 [ ] Include a readme file in your github repository that has instructions on how to run your project. In the readme have a table cross referencing your github names and real names.
 [ ] include an install script for your project
+      install.sh, commands for all needed packages (sudo apt install Java, and other needed stuff)
