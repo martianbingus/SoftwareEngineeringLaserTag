@@ -65,7 +65,10 @@ public class udpSend implements Runnable
 
 				// break the loop if user enters "bye"
 				if (inp.equalsIgnoreCase("bye"))
+				{
+					System.out.println("Closing sending thread.");
 					break;
+				}
 			}
 			catch (IOException e)
 			{
