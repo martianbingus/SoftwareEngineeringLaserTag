@@ -10,7 +10,11 @@ public class udpReceive implements Runnable
 {
     // Constructor so the connection can run in a thread in the actual program
     // might need to pass in the database (code controlling it), view, and controller to update the scores and action feed
-    udpReceive()
+    DatagramSocket dsReceive;
+	byte[] receive;
+	DatagramPacket DpReceive;
+	
+	udpReceive()
     {
         // possibly need the below variables passed in as well
         // d = data;
@@ -18,39 +22,66 @@ public class udpReceive implements Runnable
         // c = controller;
 
         // Step 1 : Create a socket to listen at port 7501
-		DatagramSocket dsReceive = new DatagramSocket(7501);
-		byte[] receive = new byte[65535];
-        DatagramPacket DpReceive = null;
+		try 
+		{
+			dsReceive = new DatagramSocket(7501);
+			receive = new byte[65535];
+		}
+		catch (SocketException e)
+		{
+			e.printStackTrace();
+		}
+        //DatagramPacket DpReceive = null;
     }
 
     public void run()
     {
-		while (true)
+		try
 		{
-			// Step 2 : create a DatgramPacket to receive the data.
-			DpReceive = new DatagramPacket(receive, receive.length);
-
-			// Step 3 : revieve the data in byte buffer.
-			dsReceive.receive(DpReceive);
-            // for now print data to console, will need to split the data and update scores and action feed in actual program
-			System.out.println("Client:-" + data(receive));
-
-
-            // FIX
-            // Need code to split data into appropriate parts and update scores and action feed in actual program
-            // only do this if we have started the game
-
-
-			// Exit the server if the client sends "bye"
-			if (data(receive).toString().equals("bye"))
+			while (true)
 			{
-				System.out.println("Client sent bye.....EXITING");
-				break;
-			}
+				// Step 2 : create a DatgramPacket to receive the data.
+				DpReceive = new DatagramPacket(receive, receive.length);
 
-			// Clear the buffer after every message.
-			receive = new byte[65535];
+				// Step 3 : revieve the data in byte buffer.
+				dsReceive.receive(DpReceive);
+
+				// extract string, trim any white space
+				String receivedString = new String(DpReceive.getData(), 0, DpReceive.getLength()).trim();
+
+				// for now print data to console, will need to split the data and update scores and action feed in actual program
+				System.out.println("Client:-" + receivedString);
+
+
+				// FIX
+				// later need code to split data into appropriate parts and update scores and action feed in actual program
+				// only do this if we have started the game
+
+
+				// Exit the server if the client sends "bye" not case sensitive
+				if (receivedString.equalsIgnoreCase("bye"))
+				{
+					System.out.println("Client sent bye.....EXITING");
+					break;
+				}
+
+				// Clear the buffer after every message.
+				// (matt) line commented, apparently in udp you dont need to clear buffer
+				// receive = new byte[65535];
+			}
 		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			if (dsReceive != null && !dsReceive.isClosed())
+			{
+				dsReceive.close();
+			}
+		}
+
 	}
 
 	// A utility method to convert the byte array

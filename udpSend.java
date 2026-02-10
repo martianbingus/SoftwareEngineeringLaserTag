@@ -5,14 +5,21 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Scanner;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 // Client class to send the data to the server, implements runnable to run as a thread inside main program
 public class udpSend implements Runnable
 {
     // Need to be able to pass in internet address
     // might need to pass in the database (code controlling it), view, and controller to update the scores and action feed
+	Scanner sc;
+	byte buf[];
+	DatagramSocket ds;
+	InetAddress ip;
     udpSend()
     {
+		
         // possibly need the below variables passed in as well
         // d = data;
         // v = view;
@@ -22,9 +29,24 @@ public class udpSend implements Runnable
 
 		// Step 1:Create the socket object for
 		// carrying the data.
-		DatagramSocket ds = new DatagramSocket();
+		try
+		{
+			DatagramSocket ds = new DatagramSocket();
+		}
+		catch (SocketException e)
+		{
+			e.printStackTrace();
+		}
 
-		InetAddress ip = InetAddress.getLocalHost();
+		try
+		{
+			InetAddress ip = InetAddress.getLocalHost();
+		}
+		catch (UnknownHostException e)
+		{
+			e.printStackTrace();
+		}
+
 		byte buf[] = null;
     }
 
@@ -45,7 +67,14 @@ public class udpSend implements Runnable
 
 			// Step 3 : invoke the send call to actually send
 			// the data.
-			ds.send(DpSend);
+			try
+			{
+				ds.send(DpSend);
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
 			// for testing
 			System.out.println("Sent data");
 
