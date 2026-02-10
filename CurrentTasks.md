@@ -4,8 +4,10 @@
 [ ] Link database to application, add two players via application - Bright
 
 [ ] Set up udp sockets, broadcast equipment codes after each player addition - Marvin & Matt
+      Semi-done, can send and receive packets over UDP ports but more testing needed once Database and GUI completed to ensure other requirements are met
       Use 127.0.0.1 aka loopback address
 [ ] Have option to select different network for udp sockets - Marvin & Matt
+      Should be a simple change to just add a parameter to the constructor for the send and receive threads
 
 
 
