@@ -46,6 +46,8 @@ public class udpSend implements Runnable
 			// Step 3 : invoke the send call to actually send
 			// the data.
 			ds.send(DpSend);
+			// for testing
+			System.out.println("Sent data");
 
 			// break the loop if user enters "bye"
 			if (inp.equals("bye"))
