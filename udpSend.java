@@ -14,73 +14,71 @@ public class udpSend implements Runnable
     // Need to be able to pass in internet address
     // might need to pass in the database (code controlling it), view, and controller to update the scores and action feed
 	Scanner sc;
-	byte buf[];
 	DatagramSocket ds;
 	InetAddress ip;
     udpSend()
     {
-		
+		try
+		{
+			sc = new Scanner(System.in);
+			// Step 1:Create the socket object for
+			// carrying the data
+			ds = new DatagramSocket();
+			ip = InetAddress.getLocalHost();
+		}
+		//two possible exceptions
+		catch (SocketException | UnknownHostException e)
+		{
+			e.printStackTrace();
+		}
+
         // possibly need the below variables passed in as well
         // d = data;
         // v = view;
         // c = controller;
-
-		Scanner sc = new Scanner(System.in);
-
-		// Step 1:Create the socket object for
-		// carrying the data.
-		try
-		{
-			DatagramSocket ds = new DatagramSocket();
-		}
-		catch (SocketException e)
-		{
-			e.printStackTrace();
-		}
-
-		try
-		{
-			InetAddress ip = InetAddress.getLocalHost();
-		}
-		catch (UnknownHostException e)
-		{
-			e.printStackTrace();
-		}
-
-		byte buf[] = null;
     }
 
+
+	@Override
     public void run()
     {
+		System.out.println("Thread started; type 'bye' to exit.");
 		// loop while user not enters "bye"
 		while (true)
 		{
-			String inp = sc.nextLine();
-
-			// convert the String input into the byte array.
-			buf = inp.getBytes();
-
-			// Step 2 : Create the datagramPacket for sending
-			// the data.
-			DatagramPacket DpSend =
-				new DatagramPacket(buf, buf.length, ip, 7500);
-
-			// Step 3 : invoke the send call to actually send
-			// the data.
 			try
 			{
-				ds.send(DpSend);
-			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-			}
-			// for testing
-			System.out.println("Sent data");
+				String inp = sc.nextLine();
+				// convert the String input into the byte array.
+				byte[] buf = inp.getBytes();
 
-			// break the loop if user enters "bye"
-			if (inp.equals("bye"))
+				// Step 2 : Create the datagramPacket for sending
+				// the data.
+				DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 7500);
+
+				// Step 3 : invoke the send call to actually send
+				// the data.
+				ds.send(DpSend);
+
+				// for testing -- send input
+				System.out.println("Sent: " + inp);
+
+				// break the loop if user enters "bye"
+				if (inp.equalsIgnoreCase("bye"))
+					break;
+			}
+			catch (IOException e)
+			{
+				System.err.println("Error sending packet: " + e.getMessage());
 				break;
+			}
+    	}
+		//cleanup :)
+		if (ds != null && !ds.isClosed())
+		{
+			ds.close();
 		}
-    }
+		System.out.println("Sender thread closed");
+
+	}
 }
