@@ -10,8 +10,8 @@ public class Gui extends JFrame {
     private JTextArea actionDisplay; 
 
     //References to the hardware classes
-    private udpSend sender;
-    private udpReceive receiver;
+    private final udpSend sender;
+    private final udpReceive receiver;
 
     private JPanel centerPanel;
 
