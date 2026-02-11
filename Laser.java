@@ -2,6 +2,7 @@ import java.util.Scanner;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.io.IOException;
 
@@ -12,6 +13,7 @@ public class Laser
     Runnable receive;
     Thread sendThread;
     Thread receiveThread;
+    Database database;
 
     public Laser()
     {
@@ -20,6 +22,8 @@ public class Laser
         receive = new udpReceive();
         sendThread = new Thread(send);
         receiveThread = new Thread(receive);
+        //try {database = new Database();}
+        //catch (SQLException UwU) {UwU.printStackTrace();}
         sendThread.start();
         receiveThread.start();
     }
