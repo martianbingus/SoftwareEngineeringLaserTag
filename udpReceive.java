@@ -3,7 +3,6 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
 
 public class udpReceive implements Runnable
@@ -13,10 +12,23 @@ public class udpReceive implements Runnable
     DatagramSocket dsReceive;
 	byte[] receive;
 	DatagramPacket DpReceive;
+
+	Gui gui; // Reference to the GUI to update the action feed
 	
+	udpReceive(Gui gui)
+    {
+		this.gui = gui;
+		setupSocket(); // Initialize socket and buffer
+    }
+
 	udpReceive()
     {
-        // possibly need the below variables passed in as well
+		this.gui = null; // No GUI
+		setupSocket(); // Initialize socket and buffer
+    }
+
+	public void setupSocket() {
+		// possibly need the below variables passed in as well
         // d = data;
         // v = view;
         // c = controller;
@@ -32,8 +44,9 @@ public class udpReceive implements Runnable
 			e.printStackTrace();
 		}
         //DatagramPacket DpReceive = null;
-    }
+	}
 
+	@Override
     public void run()
     {
 		try
@@ -52,6 +65,10 @@ public class udpReceive implements Runnable
 				// for now print data to console, will need to split the data and update scores and action feed in actual program
 				System.out.println("Client:-" + receivedString);
 
+				// Update the GUI action feed with the received message
+				if (gui != null) {
+					gui.consoleLog("Received: " + receivedString);
+				}
 
 				// FIX
 				// later need code to split data into appropriate parts and update scores and action feed in actual program

@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Scanner;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 // Client class to send the data to the server, implements runnable to run as a thread inside main program
 public class udpSend implements Runnable
@@ -16,26 +16,50 @@ public class udpSend implements Runnable
 	Scanner sc;
 	DatagramSocket ds;
 	InetAddress ip;
-    udpSend()
+
+	Gui gui; // Reference to the GUI to update the action feed
+
+	udpSend(Gui gui){
+        this.gui = gui;
+        setupSocket();
+    }
+
+    udpSend() 
     {
-		try
+        this.gui = null; // No GUI
+        setupSocket(); // Initialize socket and scanner
+        sc = new Scanner(System.in); // Init scanner only here
+    }
+
+	void setupSocket() {
+    	try
 		{
-			sc = new Scanner(System.in);
 			// Step 1:Create the socket object for
 			// carrying the data
 			ds = new DatagramSocket();
-			ip = InetAddress.getLocalHost();
+			//ip = InetAddress.getLocalHost(); //use if needed in the future
+			ip = InetAddress.getByName("127.0.0.1");
 		}
 		//two possible exceptions
 		catch (SocketException | UnknownHostException e)
 		{
 			e.printStackTrace();
 		}
+    }
 
         // possibly need the below variables passed in as well
         // d = data;
         // v = view;
         // c = controller;
+
+	public void send(String message) {
+        try {
+            byte[] buf = message.getBytes();
+            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 7500);
+            ds.send(DpSend);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
