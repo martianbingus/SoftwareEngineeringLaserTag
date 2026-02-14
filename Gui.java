@@ -317,10 +317,10 @@ public class Gui extends JFrame {
         sender.send("202"); //Send Start Code
     }
 
-    // public static void main(String[] args) {
-    //     SwingUtilities.invokeLater(() -> {
-    //         Gui gui = new Gui();
-    //         gui.setVisible(true);
-    //     });
-    // }
+   //  public static void main(String[] args) {
+   //      SwingUtilities.invokeLater(() -> {
+   //          Gui gui = new Gui();
+   //          gui.setVisible(true);
+   //      });
+   //  }
 }

@@ -14,6 +14,16 @@ public class Database {
     //for dumb reasons, I couldn't handle the SQLException in the constructor, so you'll need to use try-catch when you call Database()
     Database() throws SQLException
     {
+	try
+       	{
+        	// Explicitly load the driver class
+        	Class.forName("org.postgresql.Driver");
+    	}
+       	catch (ClassNotFoundException e)
+       	{
+        	System.err.println("PostgreSQL JDBC Driver not found. Add the JAR to your classpath!");
+        	e.printStackTrace();
+    	}
         this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "student");
     }
 
@@ -110,3 +120,4 @@ public class Database {
         }
     }
 }
+
