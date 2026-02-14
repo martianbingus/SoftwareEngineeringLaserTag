@@ -39,7 +39,7 @@ public class Laser
 
     public void run()
     {
-        // this method is just to keep the main thread alive, since the connection threads and gui are running in the background
+        // this method is just to keep the main thread alive, since the connection threads, gui, and database are running in the background
         while (true)
         {
             try 
