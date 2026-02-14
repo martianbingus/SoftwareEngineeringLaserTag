@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+
 import javax.swing.*;
 
 public class Gui extends JFrame {
@@ -16,7 +18,8 @@ public class Gui extends JFrame {
     private JPanel centerPanel;
 
 
-        public Gui() {
+    public Gui(Laser laser) 
+    {
         setTitle("Laser Tag System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -209,7 +212,7 @@ public class Gui extends JFrame {
             teamColor
         ));
 
-        //Columns: ID (20%), Name (80%)
+        //Columns: ID (20%), Name (60%), Hardware ID (20%)
         JPanel list = new JPanel(new GridBagLayout()); 
         list.setBackground(Color.DARK_GRAY);
         
@@ -230,11 +233,19 @@ public class Gui extends JFrame {
         
         //Name Header
         c.gridx = 1;
-        c.weightx = 0.8;
+        c.weightx = 0.6;
         JLabel h2 = new JLabel("NAME", SwingConstants.CENTER);
         h2.setForeground(teamColor); 
         h2.setFont(new Font("Arial", Font.BOLD, 16));
         list.add(h2, c);
+
+        //Hardware ID Header
+        c.gridx = 2;
+        c.weightx = 0.2;
+        JLabel h3 = new JLabel("HW ID", SwingConstants.CENTER);
+        h3.setForeground(teamColor); 
+        h3.setFont(new Font("Arial", Font.BOLD, 16));
+        list.add(h3, c);
 
         //Dark Team Color for the name box
         Color boxColor;
@@ -263,7 +274,7 @@ public class Gui extends JFrame {
 
             //Name Column (Editable Text Field)
             c.gridx = 1;
-            c.weightx = 0.8; //80% Width
+            c.weightx = 0.6; //60% Width
             
             JTextField name = new JTextField();
             name.setBackground(boxColor);
@@ -272,8 +283,21 @@ public class Gui extends JFrame {
             name.setFont(new Font("Arial", Font.BOLD, 16));
             name.setBorder(BorderFactory.createLineBorder(teamColor, 2));
             name.setHorizontalAlignment(JTextField.CENTER);
-            
+
             list.add(name, c);
+
+            //Hardware ID Column (Editable Text Field)
+            c.gridx = 2;
+            c.weightx = 0.2; //20% Width
+            JTextField hardwareId = new JTextField();
+            hardwareId.setBackground(boxColor);
+            hardwareId.setForeground(Color.WHITE);
+            hardwareId.setCaretColor(Color.WHITE);
+            hardwareId.setFont(new Font("Arial", Font.BOLD, 16));
+            hardwareId.setBorder(BorderFactory.createLineBorder(teamColor, 2));
+            hardwareId.setHorizontalAlignment(JTextField.CENTER);
+
+            list.add(hardwareId, c);
         }
         
         teamPanel.add(list, BorderLayout.CENTER); 
@@ -282,15 +306,21 @@ public class Gui extends JFrame {
     }
 
     private void startGame() {
+        // // gather player info from the text fields, send to laser class to store in database, then switch to game screen
+        // List<String> playerNames = new ArrayList<>();
+        // List<Integer> playerIds = new ArrayList<>();
+
+        // // FIX GO BACK HERE
+
         cardLayout.show(mainPanel, "GAME");
         actionDisplay.setText("Game Started. Waiting for data...\n");
         sender.send("202"); //Send Start Code
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            Gui gui = new Gui();
-            gui.setVisible(true);
-        });
-    }
+    // public static void main(String[] args) {
+    //     SwingUtilities.invokeLater(() -> {
+    //         Gui gui = new Gui();
+    //         gui.setVisible(true);
+    //     });
+    // }
 }

@@ -74,7 +74,6 @@ public class udpReceive implements Runnable
 				// later need code to split data into appropriate parts and update scores and action feed in actual program
 				// only do this if we have started the game
 
-
 				// Exit the server if the client sends "bye" not case sensitive
 				if (receivedString.equalsIgnoreCase("bye"))
 				{

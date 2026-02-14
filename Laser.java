@@ -8,53 +8,57 @@ import java.io.IOException;
 
 public class Laser
 {
-    // create objects for database, controller, view, class
-    Runnable send;
-    Runnable receive;
-    Thread sendThread;
-    Thread receiveThread;
+    // create objects for database, controller, view
+    // Runnable send;
+    // Runnable receive;
+    // Thread sendThread;
+    // Thread receiveThread;
     Database database;
+    Gui gui;
 
     public Laser()
     {
-        // initialize sending and receiving threads
-        send = new udpSend();
-        receive = new udpReceive();
-        sendThread = new Thread(send);
-        receiveThread = new Thread(receive);
-        //try {database = new Database();}
-        //catch (SQLException UwU) {UwU.printStackTrace();}
-        sendThread.start();
-        receiveThread.start();
+        // // initialize sending and receiving threads
+        // send = new udpSend();
+        // receive = new udpReceive();
+        // sendThread = new Thread(send);
+        // receiveThread = new Thread(receive);
+        // initialize database connection
+        try 
+        {
+            database = new Database();
+        }
+        catch (SQLException UwU) 
+        {
+            UwU.printStackTrace();
+        }
+        // sendThread.start();
+        // receiveThread.start();
     }
 
+    public void run()
+    {
+        // this method is just to keep the main thread alive, since the connection threads and gui are running in the background
+        while (true)
+        {
+            try 
+            {
+                Thread.sleep(1000);
+            }
+            catch (InterruptedException e) 
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // main method to run the program
     public static void main(String[] args)
     {
+        // initialize laser and gui
+        // also initializes the sending and receiving threads, and the database connection via the Laser constructor
         Laser laser = new Laser();
-
-        try
-       	{
-            Thread.sleep(1000);
-        }
-       	catch (InterruptedException e)
-       	{
-            e.printStackTrace();
-        }
-
-        System.out.println("Please enter 202 to start the game.");
-        Scanner scanner = new Scanner(System.in);
-
-        if (scanner.hasNextInt())
-       	{
-            int input = scanner.nextInt();
-            if (input == 202)
-	    {
-                System.out.println("Transmitting start code...");
-            }
-	    else
-	    {
-                System.out.println("Invalid input.");
-            }
-        }
+        laser.gui = new Gui(laser);
+        laser.run();
     }
 }
