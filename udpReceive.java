@@ -27,6 +27,11 @@ public class udpReceive implements Runnable
 		setupSocket(); // Initialize socket and buffer
     }
 
+    	public void setGui(Gui g)
+	{
+		this.gui = g;
+	}
+
 	public void setupSocket() {
 		// possibly need the below variables passed in as well
         // d = data;
@@ -49,6 +54,11 @@ public class udpReceive implements Runnable
 	@Override
     public void run()
     {
+	    if (dsReceive == null)
+	    {
+		    System.err.println("Receive socket is null. Thread Exiting.");
+		    return;
+	    }
 		try
 		{
 			while (true)

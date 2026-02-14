@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.Scanner;
 import java.io.IOException;
+import javax.swing.*;
 
 public class Laser
 {
@@ -55,10 +56,17 @@ public class Laser
     // main method to run the program
     public static void main(String[] args)
     {
+	Laser laser = new Laser();
+
         // initialize laser and gui
         // also initializes the sending and receiving threads, and the database connection via the Laser constructor
-        Laser laser = new Laser();
-        laser.gui = new Gui(laser);
+        // Testing initializing network objects here
+	udpSend sender = new udpSend();
+	udpReceive receiver = new udpReceive();
+
+        laser.gui = new Gui(laser, sender, receiver);
+	laser.gui.setVisible(true);
+
         laser.run();
     }
 }

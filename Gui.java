@@ -18,16 +18,20 @@ public class Gui extends JFrame {
     private JPanel centerPanel;
 
 
-    public Gui(Laser laser) 
+    public Gui(Laser laser, udpSend sender, udpReceive receiver) 
     {
+	this.sender = sender;
+	this.receiver = receiver;
+	this.receiver.setGui(this);
+
         setTitle("Laser Tag System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLocationRelativeTo(null);
 
         //Initialize Network Classes
-        sender = new udpSend(this);
-        receiver = new udpReceive(this);
+        //sender = new udpSend(this);
+        //receiver = new udpReceive(this);
 
         //Start Receiver Thread (Listener)
         Thread recThread = new Thread(receiver);
