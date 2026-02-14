@@ -17,12 +17,21 @@ public class Gui extends JFrame {
 
     private JPanel centerPanel;
 
+    // lists to hold references to the text fields for player names and hardware ids, so we can gather the data when starting the game
+    private ArrayList<JTextField> redPlayerId = new ArrayList<>();
+    private ArrayList<JTextField> redPlayerName = new ArrayList<>();
+    private ArrayList<JTextField> greenPlayerId = new ArrayList<>();
+    private ArrayList<JTextField> greenPlayerName = new ArrayList<>();
+
+    private Laser laser; //Reference to the main Laser class
+
 
     public Gui(Laser laser, udpSend sender, udpReceive receiver) 
     {
-	this.sender = sender;
-	this.receiver = receiver;
-	this.receiver.setGui(this);
+        this.sender = sender;
+        this.receiver = receiver;
+        this.receiver.setGui(this);
+        this.laser = laser;
 
         setTitle("Laser Tag System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -186,6 +195,12 @@ public class Gui extends JFrame {
     }
 
     private void updateTeamPanels(int totalPlayers) {
+        // clear the lists of text field references since we're rebuilding
+        redPlayerId.clear();
+        redPlayerName.clear();
+        greenPlayerId.clear();
+        greenPlayerName.clear();
+
         //Calculate players per team
         int playersPerTeam = totalPlayers / 2;
 
@@ -279,7 +294,6 @@ public class Gui extends JFrame {
             //Name Column (Editable Text Field)
             c.gridx = 1;
             c.weightx = 0.6; //60% Width
-            
             JTextField name = new JTextField();
             name.setBackground(boxColor);
             name.setForeground(Color.WHITE);
@@ -302,6 +316,14 @@ public class Gui extends JFrame {
             hardwareId.setHorizontalAlignment(JTextField.CENTER);
 
             list.add(hardwareId, c);
+
+            if (teamName.contains("RED")) {
+                redPlayerName.add(name);
+                redPlayerId.add(hardwareId);
+            } else {
+                greenPlayerName.add(name);
+                greenPlayerId.add(hardwareId);
+            }
         }
         
         teamPanel.add(list, BorderLayout.CENTER); 
@@ -310,11 +332,32 @@ public class Gui extends JFrame {
     }
 
     private void startGame() {
-        // // gather player info from the text fields, send to laser class to store in database, then switch to game screen
-        // List<String> playerNames = new ArrayList<>();
-        // List<Integer> playerIds = new ArrayList<>();
-
-        // // FIX GO BACK HERE
+        // red team database entries
+        for (int i = 0; i < redPlayerName.size(); i++) 
+        {
+            // get the data from the text fields
+            String name = redPlayerName.get(i).getText().trim();
+            String idText = redPlayerId.get(i).getText().trim();
+            if (!name.isEmpty() && !idText.isEmpty()) 
+            {
+                // add the player to the database, parse the id text to an integer
+                int id = Integer.parseInt(idText);
+                laser.addPlayer(id, name);
+            }
+        }
+        // green team database entries
+        for (int i = 0; i < greenPlayerName.size(); i++) 
+        {
+            // get the data from the text fields
+            String name = greenPlayerName.get(i).getText().trim();
+            String idText = greenPlayerId.get(i).getText().trim();
+            if (!name.isEmpty() && !idText.isEmpty()) 
+            {
+                // add the player to the database, parse the id text to an integer
+                int id = Integer.parseInt(idText);
+                laser.addPlayer(id, name);
+            }
+        }
 
         cardLayout.show(mainPanel, "GAME");
         actionDisplay.setText("Game Started. Waiting for data...\n");

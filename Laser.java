@@ -37,6 +37,20 @@ public class Laser
         // receiveThread.start();
     }
 
+    public void addPlayer(int id, String codename)
+    {
+        // check if player is already in the database to avoid duplicates
+        if (!database.checkForId(id))
+        {
+            database.insertEntry(id, codename);
+            System.out.println("Saved new player: " + codename + " with hardware id: " + id);
+        }
+        else
+        {
+            System.out.println("Player with hardware id " + id + " already exists in the database.");
+        }
+    }
+
     public void run()
     {
         // this method is just to keep the main thread alive, since the connection threads, gui, and database are running in the background
