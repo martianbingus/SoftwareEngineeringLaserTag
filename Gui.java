@@ -144,6 +144,12 @@ public class Gui extends JFrame {
             @Override public void actionPerformed(ActionEvent e) { startGame(); } 
         });
 
+        // ip address input and send button
+        JTextField ipField = new JTextField("127.0.0.1");
+        JPanel ipPanel = new JPanel();
+        ipPanel.add(new JLabel("Target IP:"));
+        ipPanel.add(ipField);
+
         return panel;
     }
 
@@ -358,6 +364,10 @@ public class Gui extends JFrame {
                 laser.addPlayer(id, name);
             }
         }
+
+        // update ip target based on input
+        String ipInput = ipField.getText().trim();
+        sender.setTargetIp(ipInput);
 
         cardLayout.show(mainPanel, "GAME");
         actionDisplay.setText("Game Started. Waiting for data...\n");

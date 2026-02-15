@@ -34,11 +34,14 @@ public class udpSend implements Runnable
 	void setupSocket() {
     	try
 		{
-			// Step 1:Create the socket object for
-			// carrying the data
+			// Step 1:Create the socket object for carrying the data
 			ds = new DatagramSocket();
-			//ip = InetAddress.getLocalHost(); //use if needed in the future
-			ip = InetAddress.getByName("127.0.0.1");
+			//ip = InetAddress.getLocalHost();
+			// default to localhost if no ip is set
+			if (ip == null) 
+			{
+				ip = InetAddress.getByName("127.0.0.1");
+			}
 		}
 		//two possible exceptions
 		catch (SocketException | UnknownHostException e)
@@ -107,6 +110,20 @@ public class udpSend implements Runnable
 		}
 		System.out.println("Sender thread closed");
 
+	}
+
+	public void setTargetIp(String ipAddress) 
+	{
+		try 
+		{
+			this.ip = InetAddress.getByName(ipAddress);
+			System.out.println("Target IP set to: " + ipAddress);
+		} 
+		catch (UnknownHostException e) 
+		{
+			System.err.println("Invalid IP address: " + ipAddress);
+			e.printStackTrace();
+		}
 	}
 }
 
