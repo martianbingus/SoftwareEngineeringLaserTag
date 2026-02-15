@@ -25,6 +25,7 @@ public class Gui extends JFrame {
 
     private Laser laser; //Reference to the main Laser class
 
+    private JTextField ipField;
 
     public Gui(Laser laser, udpSend sender, udpReceive receiver) 
     {
@@ -145,10 +146,15 @@ public class Gui extends JFrame {
         });
 
         // ip address input and send button
-        JTextField ipField = new JTextField("127.0.0.1");
+        this.ipField = new JTextField("127.0.0.1");
         JPanel ipPanel = new JPanel();
-        ipPanel.add(new JLabel("Target IP:"));
-        ipPanel.add(ipField);
+	ipPanel.setBackground(new Color(50,50,50));
+	JLabel ipLabel = new JLabel("Target IP: ");
+	ipLabel.setForeground(Color.WHITE);
+	ipPanel.add(ipLabel);
+	ipPanel.add(ipField);
+
+	panel.add(ipPanel, BorderLayout.NORTH);
 
         return panel;
     }
@@ -366,7 +372,7 @@ public class Gui extends JFrame {
         }
 
         // update ip target based on input
-        String ipInput = ipField.getText().trim();
+        String ipInput = this.ipField.getText().trim();
         sender.setTargetIp(ipInput);
 
         cardLayout.show(mainPanel, "GAME");
