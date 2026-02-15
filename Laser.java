@@ -70,16 +70,15 @@ public class Laser
     // main method to run the program
     public static void main(String[] args)
     {
-	Laser laser = new Laser();
-
+	    Laser laser = new Laser();
         // initialize laser and gui
         // also initializes the sending and receiving threads, and the database connection via the Laser constructor
         // Testing initializing network objects here
-	udpSend sender = new udpSend();
-	udpReceive receiver = new udpReceive();
+    	udpSend sender = new udpSend();
+	    udpReceive receiver = new udpReceive(null, sender); // pass sender to receiver so it can update the action feed when it receives a message
 
         laser.gui = new Gui(laser, sender, receiver);
-	laser.gui.setVisible(true);
+	    laser.gui.setVisible(true);
 
         laser.run();
     }
