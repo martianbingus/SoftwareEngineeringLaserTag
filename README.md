@@ -17,4 +17,5 @@ INSTRUCTIONS TO RUN:
         javac *.java
     Launch the code
         java -cp ".:postgresql-42.7.10.jar" Laser
+
         
