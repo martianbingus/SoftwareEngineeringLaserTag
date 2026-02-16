@@ -114,10 +114,17 @@ public class Database {
         {
             query.setString(1, codename);
             query.executeUpdate();
-        }
+        } 
         catch (SQLException UwU) {
             UwU.printStackTrace();
         }
     }
+
+    public void updateEntry(int id, String codeName)
+    {
+        this.deleteEntryById(id);
+        this.insertEntry(id, codeName);
+    }
 }
+
 

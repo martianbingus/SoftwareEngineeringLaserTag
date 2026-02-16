@@ -47,7 +47,8 @@ public class Laser
         }
         else
         {
-            System.out.println("Player with hardware id " + id + " already exists in the database.");
+            database.updateEntry(id, codename);
+            System.out.println("Player with hardware id " + id + " already exists in the database. Changed codename to " + codename);
         }
     }
 
