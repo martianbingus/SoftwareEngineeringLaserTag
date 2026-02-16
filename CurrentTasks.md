@@ -18,3 +18,4 @@ Non-Individual
 [X] Make at least one task assignment in Trello for each team member
 [ ] Fill out and submit last part of attached document for the team (only one member needs to submit)
 [ ] Make sure to follow the same rules for the report as in sprint 1
+
