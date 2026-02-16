@@ -125,6 +125,19 @@ public class Database {
         this.deleteEntryById(id);
         this.insertEntry(id, codeName);
     }
+
+    public void clear()
+    {
+        String qs = "TRUNCATE FROM players";
+        try (PreparedStatement query = connection.prepareStatement(qs))
+        {
+            //query.setString(1, codename);
+            query.executeUpdate();
+        }
+        catch (SQLException UwU) {
+            UwU.printStackTrace();
+        }
+    }
 }
 
 
