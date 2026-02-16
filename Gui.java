@@ -60,10 +60,8 @@ public class Gui extends JFrame {
         //Start Flow
         cardLayout.show(mainPanel, "SPLASH");
         
-        //Auto transition from Splash to Entry after 5 seconds
-        Timer splashTimer = new Timer(5000, e -> cardLayout.show(mainPanel, "ENTRY"));
-        splashTimer.setRepeats(false);
-        splashTimer.start();
+        // REMOVED: Auto transition Timer. 
+        // The splash screen now waits for the Start button press.
     }
 
     /*
@@ -83,15 +81,36 @@ public class Gui extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.BLACK);
         
-        JLabel title = new JLabel("LASER TAG", SwingConstants.CENTER);
-        title.setFont(new Font("Serif", Font.BOLD, 50));
-        title.setForeground(Color.GREEN);
+        // 1. Load the Image
+        ImageIcon originalIcon = new ImageIcon("logo.png");
         
-        JLabel sub = new JLabel("Loading System...", SwingConstants.CENTER);
-        sub.setForeground(Color.WHITE);
+        // 2. Scale the image to fit nicely (e.g., 600px width, preserving aspect ratio approx)
+        Image image = originalIcon.getImage();
+        // Scale to 600x400 smooth
+        Image scaledImage = image.getScaledInstance(600, 400, java.awt.Image.SCALE_SMOOTH);
+        JLabel logoLabel = new JLabel(new ImageIcon(scaledImage));
+        logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        // 3. Create the Start Button
+        JButton startSplashButton = new JButton("START SYSTEM");
+        startSplashButton.setPreferredSize(new Dimension(200, 50));
+        startSplashButton.setBackground(Color.GREEN);
+        startSplashButton.setForeground(Color.BLACK);
+        startSplashButton.setFont(new Font("Arial", Font.BOLD, 18));
+        startSplashButton.setFocusPainted(false);
+        
+        // Add Action Listener to switch to the ENTRY screen
+        startSplashButton.addActionListener(e -> cardLayout.show(mainPanel, "ENTRY"));
 
-        panel.add(title, BorderLayout.CENTER);
-        panel.add(sub, BorderLayout.SOUTH);
+        // Container for the button to give it some padding
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Color.BLACK);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 50, 0)); // Padding bottom
+        buttonPanel.add(startSplashButton);
+
+        panel.add(logoLabel, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+        
         return panel;
     }
 
@@ -148,13 +167,13 @@ public class Gui extends JFrame {
         // ip address input and send button
         this.ipField = new JTextField("127.0.0.1");
         JPanel ipPanel = new JPanel();
-	ipPanel.setBackground(new Color(50,50,50));
-	JLabel ipLabel = new JLabel("Target IP: ");
-	ipLabel.setForeground(Color.WHITE);
-	ipPanel.add(ipLabel);
-	ipPanel.add(ipField);
+        ipPanel.setBackground(new Color(50,50,50));
+        JLabel ipLabel = new JLabel("Target IP: ");
+        ipLabel.setForeground(Color.WHITE);
+        ipPanel.add(ipLabel);
+        ipPanel.add(ipField);
 
-	panel.add(ipPanel, BorderLayout.NORTH);
+        panel.add(ipPanel, BorderLayout.NORTH);
 
         return panel;
     }
