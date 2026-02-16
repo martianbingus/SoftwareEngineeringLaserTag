@@ -12,6 +12,8 @@ sudo apt install -y default-jre default-jdk
 echo "Ensuring Python 3 is installed..."
 sudo apt install -y python3
 
+sudo apt install -y postgresql
+
 echo "Installation complete!"
 echo "You can now compile the project using: javac *.java"
 echo "And run it using: java -cp \".:postgresql-42.7.10.jar\" Laser"
