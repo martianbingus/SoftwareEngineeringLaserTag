@@ -17,7 +17,7 @@ public class Gui extends JFrame {
 
     private JPanel centerPanel;
 
-    // lists to hold references to the text fields for player names and hardware ids, so we can gather the data when starting the game
+    // lists to hold references to the text fields for player names and hardware ids
     private ArrayList<JTextField> redPlayerId = new ArrayList<>();
     private ArrayList<JTextField> redPlayerName = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerId = new ArrayList<>();
@@ -39,10 +39,6 @@ public class Gui extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
 
-        //Initialize Network Classes
-        //sender = new udpSend(this);
-        //receiver = new udpReceive(this);
-
         //Start Receiver Thread (Listener)
         Thread recThread = new Thread(receiver);
         recThread.start();
@@ -60,14 +56,16 @@ public class Gui extends JFrame {
         //Start Flow
         cardLayout.show(mainPanel, "SPLASH");
         
-        // REMOVED: Auto transition Timer. 
-        // The splash screen now waits for the Start button press.
+        // --- TIMER ENABLED ---
+        // Auto transition from Splash to Entry after 3 seconds
+        Timer splashTimer = new Timer(3000, e -> cardLayout.show(mainPanel, "ENTRY"));
+        splashTimer.setRepeats(false);
+        splashTimer.start();
     }
 
     /*
     Public "Console-Like" Functions for UDP Classes
     Call this from udpReceive to print data to the game screen.
-    Acts like System.out.println
     */
     public void consoleLog(String message) {
         SwingUtilities.invokeLater(() -> {
@@ -78,38 +76,25 @@ public class Gui extends JFrame {
 
     //Screen builder methods
     private JPanel createSplashScreen() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.BLACK);
-        
-        // 1. Load the Image
+        // 1. Load the Image (Ensure "logo.png" is in your project folder)
         ImageIcon originalIcon = new ImageIcon("logo.png");
-        
-        // 2. Scale the image to fit nicely (e.g., 600px width, preserving aspect ratio approx)
-        Image image = originalIcon.getImage();
-        // Scale to 600x400 smooth
-        Image scaledImage = image.getScaledInstance(600, 400, java.awt.Image.SCALE_SMOOTH);
-        JLabel logoLabel = new JLabel(new ImageIcon(scaledImage));
-        logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        
-        // 3. Create the Start Button
-        JButton startSplashButton = new JButton("START SYSTEM");
-        startSplashButton.setPreferredSize(new Dimension(200, 50));
-        startSplashButton.setBackground(Color.GREEN);
-        startSplashButton.setForeground(Color.BLACK);
-        startSplashButton.setFont(new Font("Arial", Font.BOLD, 18));
-        startSplashButton.setFocusPainted(false);
-        
-        // Add Action Listener to switch to the ENTRY screen
-        startSplashButton.addActionListener(e -> cardLayout.show(mainPanel, "ENTRY"));
+        Image splashImage = originalIcon.getImage();
 
-        // Container for the button to give it some padding
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(Color.BLACK);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 50, 0)); // Padding bottom
-        buttonPanel.add(startSplashButton);
-
-        panel.add(logoLabel, BorderLayout.CENTER);
-        panel.add(buttonPanel, BorderLayout.SOUTH);
+        // 2. Create a custom JPanel that paints the image to fill the entire area
+        // This overrides the paintComponent method to draw the image at the panel's current width/height
+        JPanel panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                // Draw the image starting at (0,0) and stretching to current width/height
+                if (splashImage != null) {
+                    g.drawImage(splashImage, 0, 0, this.getWidth(), this.getHeight(), this);
+                }
+            }
+        };
+        
+        panel.setBackground(Color.BLACK);
+        panel.setLayout(new BorderLayout());
         
         return panel;
     }
@@ -398,11 +383,4 @@ public class Gui extends JFrame {
         actionDisplay.setText("Game Started. Waiting for data...\n");
         sender.send("202"); //Send Start Code
     }
-
-   //  public static void main(String[] args) {
-   //      SwingUtilities.invokeLater(() -> {
-   //          Gui gui = new Gui();
-   //          gui.setVisible(true);
-   //      });
-   //  }
 }
