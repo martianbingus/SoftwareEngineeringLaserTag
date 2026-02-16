@@ -12,7 +12,7 @@ INSTRUCTIONS TO RUN:
         cd SoftwareEngineeringLaserTag
     Run install script
         chmod +x install.sh
-        ./setup.sh
+        ./install.sh
     Compile the code
         javac *.java
     Launch the code
