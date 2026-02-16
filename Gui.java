@@ -17,7 +17,7 @@ public class Gui extends JFrame {
 
     private JPanel centerPanel;
 
-    // lists to hold references to the text fields for player names and hardware ids, so we can gather the data when starting the game
+    // lists to hold references to the text fields for player names and hardware ids
     private ArrayList<JTextField> redPlayerId = new ArrayList<>();
     private ArrayList<JTextField> redPlayerName = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerId = new ArrayList<>();
@@ -39,10 +39,6 @@ public class Gui extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
 
-        //Initialize Network Classes
-        //sender = new udpSend(this);
-        //receiver = new udpReceive(this);
-
         //Start Receiver Thread (Listener)
         Thread recThread = new Thread(receiver);
         recThread.start();
@@ -60,8 +56,9 @@ public class Gui extends JFrame {
         //Start Flow
         cardLayout.show(mainPanel, "SPLASH");
         
-        //Auto transition from Splash to Entry after 5 seconds
-        Timer splashTimer = new Timer(5000, e -> cardLayout.show(mainPanel, "ENTRY"));
+        // --- TIMER ENABLED ---
+        // Auto transition from Splash to Entry after 3 seconds
+        Timer splashTimer = new Timer(3000, e -> cardLayout.show(mainPanel, "ENTRY"));
         splashTimer.setRepeats(false);
         splashTimer.start();
     }
@@ -69,7 +66,6 @@ public class Gui extends JFrame {
     /*
     Public "Console-Like" Functions for UDP Classes
     Call this from udpReceive to print data to the game screen.
-    Acts like System.out.println
     */
     public void consoleLog(String message) {
         SwingUtilities.invokeLater(() -> {
@@ -80,18 +76,26 @@ public class Gui extends JFrame {
 
     //Screen builder methods
     private JPanel createSplashScreen() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.BLACK);
-        
-        JLabel title = new JLabel("LASER TAG", SwingConstants.CENTER);
-        title.setFont(new Font("Serif", Font.BOLD, 50));
-        title.setForeground(Color.GREEN);
-        
-        JLabel sub = new JLabel("Loading System...", SwingConstants.CENTER);
-        sub.setForeground(Color.WHITE);
+        // 1. Load the Image (Ensure "logo.png" is in your project folder)
+        ImageIcon originalIcon = new ImageIcon("logo.png");
+        Image splashImage = originalIcon.getImage();
 
-        panel.add(title, BorderLayout.CENTER);
-        panel.add(sub, BorderLayout.SOUTH);
+        // 2. Create a custom JPanel that paints the image to fill the entire area
+        // This overrides the paintComponent method to draw the image at the panel's current width/height
+        JPanel panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                // Draw the image starting at (0,0) and stretching to current width/height
+                if (splashImage != null) {
+                    g.drawImage(splashImage, 0, 0, this.getWidth(), this.getHeight(), this);
+                }
+            }
+        };
+        
+        panel.setBackground(Color.BLACK);
+        panel.setLayout(new BorderLayout());
+        
         return panel;
     }
 
@@ -148,13 +152,13 @@ public class Gui extends JFrame {
         // ip address input and send button
         this.ipField = new JTextField("127.0.0.1");
         JPanel ipPanel = new JPanel();
-	ipPanel.setBackground(new Color(50,50,50));
-	JLabel ipLabel = new JLabel("Target IP: ");
-	ipLabel.setForeground(Color.WHITE);
-	ipPanel.add(ipLabel);
-	ipPanel.add(ipField);
+        ipPanel.setBackground(new Color(50,50,50));
+        JLabel ipLabel = new JLabel("Target IP: ");
+        ipLabel.setForeground(Color.WHITE);
+        ipPanel.add(ipLabel);
+        ipPanel.add(ipField);
 
-	panel.add(ipPanel, BorderLayout.NORTH);
+        panel.add(ipPanel, BorderLayout.NORTH);
 
         return panel;
     }
@@ -379,11 +383,4 @@ public class Gui extends JFrame {
         actionDisplay.setText("Game Started. Waiting for data...\n");
         sender.send("202"); //Send Start Code
     }
-
-   //  public static void main(String[] args) {
-   //      SwingUtilities.invokeLater(() -> {
-   //          Gui gui = new Gui();
-   //          gui.setVisible(true);
-   //      });
-   //  }
 }
