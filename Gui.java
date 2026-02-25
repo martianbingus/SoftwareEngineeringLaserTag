@@ -378,6 +378,7 @@ public class Gui extends JFrame {
                 // add the player to the database, parse the id text to an integer
                 int id = Integer.parseInt(idText);
                 laser.addPlayer(id, name, hwId);
+                sender.send(Integer.toString(hwId));
             }
         }
         // green team database entries
@@ -392,6 +393,7 @@ public class Gui extends JFrame {
                 // add the player to the database, parse the id text to an integer
                 int id = Integer.parseInt(idText);
                 laser.addPlayer(id, name, hwId);
+                sender.send(Integer.toString(hwId));
             }
         }
         System.out.println("Data successfully dispatched to PostgreSQL.");
