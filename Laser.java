@@ -44,7 +44,8 @@ public class Laser
             database.updateEntry(id, codename);
             System.out.println("Player with player id " + id + " already exists in the database. Changed codename to " + codename);
         }
-        sender.send(Integer.toString(hwId));
+        String hwIdString = Integer.toString(hwId);
+        sender.send(hwIdString);
     }
 
     public void run()
