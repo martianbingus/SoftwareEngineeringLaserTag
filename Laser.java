@@ -9,7 +9,6 @@ public class Laser
     // Thread receiveThread;
     Database database;
     Gui gui;
-    udpSend sender;
 
     public Laser()
     {
