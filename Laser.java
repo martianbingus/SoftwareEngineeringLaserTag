@@ -30,7 +30,7 @@ public class Laser
         // receiveThread.start();
     }
 
-    public void addPlayer(int id, String codename, int hwId)
+    public void addPlayer(int id, String codename, String hwId)
     {
         // check if player is already in the database to avoid duplicates
         if (!database.checkForId(id))
