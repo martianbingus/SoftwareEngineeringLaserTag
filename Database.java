@@ -24,7 +24,7 @@ public class Database {
         	System.err.println("PostgreSQL JDBC Driver not found. Add the JAR to your classpath!");
         	e.printStackTrace();
     	}
-        this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "student");
+        this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "");
     }
 
     //verifies that a given id is listed on the database
