@@ -27,9 +27,6 @@ public class Database {
         	System.err.println("PostgreSQL JDBC Driver not found. Add the JAR to your classpath!");
         	e.printStackTrace();
     	}
-<<<<<<< Updated upstream
-        this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "");
-=======
 	Properties props = new Properties();
 	props.setProperty("user", "student");
 	props.setProperty("password", "student");
@@ -37,7 +34,6 @@ public class Database {
 	props.put("socketFactoryArg", "/var/run/postgresql/.s.PGSQL.5432");
 	this.connection = DriverManager.getConnection("jdbc:postgresql://localhost/photon", props);
         // this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "student");
->>>>>>> Stashed changes
     }
 
     //verifies that a given id is listed on the database
