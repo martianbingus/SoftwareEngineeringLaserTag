@@ -5,6 +5,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+// below two line are  added to test forcing a connection over local vs the current TCP/IP connection using ipv4 or ipv6
+import org.newsclub.net.unix.AFUNIXSocketFactory;
+import java.util.Properties;
 
 //developed by Bright Rupp, the one and only :3 UwU
 
@@ -24,7 +27,17 @@ public class Database {
         	System.err.println("PostgreSQL JDBC Driver not found. Add the JAR to your classpath!");
         	e.printStackTrace();
     	}
+<<<<<<< Updated upstream
         this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "");
+=======
+	Properties props = new Properties();
+	props.setProperty("user", "student");
+	props.setProperty("password", "student");
+	props.put("socketFactory", "org.newsclub.net.unix.AFUNIXSocketFactory$FactoryArg");
+	props.put("socketFactoryArg", "/var/run/postgresql/.s.PGSQL.5432");
+	this.connection = DriverManager.getConnection("jdbc:postgresql://localhost/photon", props);
+        // this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "student");
+>>>>>>> Stashed changes
     }
 
     //verifies that a given id is listed on the database
