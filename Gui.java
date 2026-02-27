@@ -2,7 +2,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-
 import javax.swing.*;
 
 public class Gui extends JFrame {
@@ -17,11 +16,14 @@ public class Gui extends JFrame {
 
     private JPanel centerPanel;
 
-    // lists to hold references to the text fields for player names and hardware ids
+    // lists to hold references to the text fields for player names, player ids, and hardware ids
     private ArrayList<JTextField> redPlayerId = new ArrayList<>();
     private ArrayList<JTextField> redPlayerName = new ArrayList<>();
+    private ArrayList<JTextField> redPlayerHwId = new ArrayList<>();
+    
     private ArrayList<JTextField> greenPlayerId = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerName = new ArrayList<>();
+    private ArrayList<JTextField> greenPlayerHwId = new ArrayList<>();
 
     private Laser laser; //Reference to the main Laser class
 
@@ -130,15 +132,30 @@ public class Gui extends JFrame {
 
         panel.add(centerPanel, BorderLayout.CENTER);
 
-        //Footer with Start Button
+        //Footer with Buttons
         JPanel footer = new JPanel();
         footer.setBackground(Color.DARK_GRAY);
+        
+        // Container to stack buttons vertically
+        JPanel buttonContainer = new JPanel(new GridLayout(2, 1, 0, 10));
+        buttonContainer.setBackground(Color.DARK_GRAY);
+
+        JButton sendDataButton = new JButton("SEND DATA");
+        sendDataButton.setPreferredSize(new Dimension(200, 50));
+        sendDataButton.setBackground(Color.BLACK);
+        sendDataButton.setForeground(Color.ORANGE);
+        sendDataButton.addActionListener(e -> sendDataToDatabase());
+
         JButton startButton = new JButton("START GAME (F5)");
         startButton.setPreferredSize(new Dimension(200, 50));
         startButton.setBackground(Color.BLACK);
         startButton.setForeground(Color.CYAN);
         startButton.addActionListener(e -> startGame());
-        footer.add(startButton);
+
+        buttonContainer.add(sendDataButton);
+        buttonContainer.add(startButton);
+
+        footer.add(buttonContainer);
         panel.add(footer, BorderLayout.SOUTH);
 
         //F5 Keybinding to Start Game
@@ -214,8 +231,10 @@ public class Gui extends JFrame {
         // clear the lists of text field references since we're rebuilding
         redPlayerId.clear();
         redPlayerName.clear();
+        redPlayerHwId.clear();
         greenPlayerId.clear();
         greenPlayerName.clear();
+        greenPlayerHwId.clear();
 
         //Calculate players per team
         int playersPerTeam = totalPlayers / 2;
@@ -247,7 +266,7 @@ public class Gui extends JFrame {
             teamColor
         ));
 
-        //Columns: ID (20%), Name (60%), Hardware ID (20%)
+        //Columns: Player ID (20%), Name (60%), Hardware ID (20%)
         JPanel list = new JPanel(new GridBagLayout()); 
         list.setBackground(Color.DARK_GRAY);
         
@@ -261,7 +280,7 @@ public class Gui extends JFrame {
         //ID Header
         c.gridx = 0;
         c.weightx = 0.2; 
-        JLabel h1 = new JLabel("ID", SwingConstants.CENTER);
+        JLabel h1 = new JLabel("PLAYER ID", SwingConstants.CENTER);
         h1.setForeground(teamColor); 
         h1.setFont(new Font("Arial", Font.BOLD, 16));
         list.add(h1, c);
@@ -294,18 +313,17 @@ public class Gui extends JFrame {
         for(int i = 0; i < playerCount; i++) {
             c.gridy = i + 1; //Move to next row
             
-            //ID Column (Non editable Text Field)
+            //Player ID Column (Editable Text Field)
             c.gridx = 0;
             c.weightx = 0.2; //20% Width
-            
-            JLabel idLabel = new JLabel(String.valueOf(i + 1), SwingConstants.CENTER);
-            idLabel.setForeground(Color.WHITE);
-            idLabel.setFont(new Font("Arial", Font.BOLD, 16));
-            idLabel.setOpaque(true);
-            idLabel.setBackground(Color.DARK_GRAY.brighter()); 
-            idLabel.setBorder(BorderFactory.createLineBorder(teamColor, 1));
-            
-            list.add(idLabel, c);
+            JTextField playerId = new JTextField();
+            playerId.setBackground(boxColor);
+            playerId.setForeground(Color.WHITE);
+            playerId.setCaretColor(Color.WHITE);
+            playerId.setFont(new Font("Arial", Font.BOLD, 16));
+            playerId.setBorder(BorderFactory.createLineBorder(teamColor, 2));
+            playerId.setHorizontalAlignment(JTextField.CENTER);
+            list.add(playerId, c);
 
             //Name Column (Editable Text Field)
             c.gridx = 1;
@@ -317,7 +335,6 @@ public class Gui extends JFrame {
             name.setFont(new Font("Arial", Font.BOLD, 16));
             name.setBorder(BorderFactory.createLineBorder(teamColor, 2));
             name.setHorizontalAlignment(JTextField.CENTER);
-
             list.add(name, c);
 
             //Hardware ID Column (Editable Text Field)
@@ -330,15 +347,16 @@ public class Gui extends JFrame {
             hardwareId.setFont(new Font("Arial", Font.BOLD, 16));
             hardwareId.setBorder(BorderFactory.createLineBorder(teamColor, 2));
             hardwareId.setHorizontalAlignment(JTextField.CENTER);
-
             list.add(hardwareId, c);
 
             if (teamName.contains("RED")) {
+                redPlayerId.add(playerId);
                 redPlayerName.add(name);
-                redPlayerId.add(hardwareId);
+                redPlayerHwId.add(hardwareId);
             } else {
+                greenPlayerId.add(playerId);
                 greenPlayerName.add(name);
-                greenPlayerId.add(hardwareId);
+                greenPlayerHwId.add(hardwareId);
             }
         }
         
@@ -347,18 +365,20 @@ public class Gui extends JFrame {
         return teamPanel;
     }
 
-    private void startGame() {
+    private void sendDataToDatabase() {
         // red team database entries
         for (int i = 0; i < redPlayerName.size(); i++) 
         {
             // get the data from the text fields
             String name = redPlayerName.get(i).getText().trim();
             String idText = redPlayerId.get(i).getText().trim();
+            String hwId = redPlayerHwId.get(i).getText().trim();
             if (!name.isEmpty() && !idText.isEmpty()) 
             {
                 // add the player to the database, parse the id text to an integer
                 int id = Integer.parseInt(idText);
-                laser.addPlayer(id, name);
+                laser.addPlayer(id, name, hwId);
+                sender.send(hwId);
             }
         }
         // green team database entries
@@ -367,14 +387,19 @@ public class Gui extends JFrame {
             // get the data from the text fields
             String name = greenPlayerName.get(i).getText().trim();
             String idText = greenPlayerId.get(i).getText().trim();
+            String hwId = greenPlayerHwId.get(i).getText().trim();
             if (!name.isEmpty() && !idText.isEmpty()) 
             {
                 // add the player to the database, parse the id text to an integer
                 int id = Integer.parseInt(idText);
-                laser.addPlayer(id, name);
+                laser.addPlayer(id, name, hwId);
+                sender.send(hwId);
             }
         }
+        System.out.println("Data successfully dispatched to PostgreSQL.");
+    }
 
+    private void startGame() {
         // update ip target based on input
         String ipInput = this.ipField.getText().trim();
         sender.setTargetIp(ipInput);

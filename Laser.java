@@ -1,11 +1,4 @@
-import java.util.Scanner;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.sql.SQLException;
-import java.util.Scanner;
-import java.io.IOException;
-import javax.swing.*;
 
 public class Laser
 {
@@ -37,18 +30,18 @@ public class Laser
         // receiveThread.start();
     }
 
-    public void addPlayer(int id, String codename)
+    public void addPlayer(int id, String codename, String hwId)
     {
         // check if player is already in the database to avoid duplicates
         if (!database.checkForId(id))
         {
             database.insertEntry(id, codename);
-            System.out.println("Saved new player: " + codename + " with hardware id: " + id);
+            System.out.println("Saved new player: " + codename + " with player id: " + id + " and with hardware id: " + hwId);
         }
         else
         {
             database.updateEntry(id, codename);
-            System.out.println("Player with hardware id " + id + " already exists in the database. Changed codename to " + codename);
+            System.out.println("Player with player id " + id + " already exists in the database. Changed codename to " + codename);
         }
     }
 
