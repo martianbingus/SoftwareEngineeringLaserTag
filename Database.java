@@ -24,7 +24,14 @@ public class Database {
         	System.err.println("PostgreSQL JDBC Driver not found. Add the JAR to your classpath!");
         	e.printStackTrace();
     	}
-        this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "student");
+		// url, user, pass provided by instructor for correct connection type.
+		String url = "jdbc:postgresql://localhost/photon";
+		String user = "student";
+		String password = "student";   // now required
+		this.connection = DriverManager.getConnection(url, user, password);
+		
+		// previous connection type
+        // this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "student");
     }
 
     //verifies that a given id is listed on the database
