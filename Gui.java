@@ -376,34 +376,6 @@ public class Gui extends JFrame {
             name.setHorizontalAlignment(JTextField.CENTER);
             list.add(name, c);
             
-            playerId.addFocusListener(new java.awt.event.FocusAdapter() 
-            {
-				@Override
-				public void focusLost(java.awt.event.FocusEvent e) 
-				{
-					String idText = playerId.getText().trim();
-					if (!idText.isEmpty()) 
-					{
-						try 
-						{
-							int id = Integer.parseInt(idText);
-							// query the database via the laser reference
-							String existingName = laser.getCodename(id);
-							
-							if (existingName != null && !existingName.isEmpty()) 
-							{
-								// fill the corresponding name field
-								name.setText(existingName);
-							}
-						} 
-						catch (NumberFormatException ex) 
-						{
-							// ignore if id isnt valid
-						}
-					}
-				}
-			});
-
             //Hardware ID Column (Editable Text Field)
             c.gridx = 2;
             c.weightx = 0.2; //20% Width
@@ -425,12 +397,98 @@ public class Gui extends JFrame {
                 greenPlayerName.add(name);
                 greenPlayerHwId.add(hardwareId);
             }
+            
+            playerId.addFocusListener(new java.awt.event.FocusAdapter() 
+            {
+				@Override
+				public void focusLost(java.awt.event.FocusEvent e) 
+				{
+					String idText = playerId.getText().trim();
+					if (idText.isEmpty()) return;
+					
+					try 
+					{
+						int id = Integer.parseInt(idText);
+						
+						// if id has been used already somewhere else, dont allow it
+						int occurrences = 0;
+						occurrences += countIdOccurrences(redPlayerId, idText);
+						occurrences += countIdOccurrences(greenPlayerId, idText);
+						if (occurrences > 1)
+						{
+							JOptionPane.showMessageDialog(Gui.this, "Player ID " + id + " has already been entered on the entry screen.", "Duplicate Entry", JOptionPane.WARNING_MESSAGE);
+							playerId.setText("");
+							name.setText("");
+							return;
+						}
+						
+						// query the database via the laser reference
+						String existingName = laser.getCodename(id);
+						
+						if (existingName != null && !existingName.isEmpty()) 
+						{
+							// fill the corresponding name field
+							name.setText(existingName);
+						}
+					} 
+					catch (NumberFormatException ex) 
+					{
+						// ignore if id isnt valid
+					}
+				}
+			});
+			
+			hardwareId.addFocusListener(new java.awt.event.FocusAdapter()
+			{
+				@Override
+				public void focusLost(java.awt.event.FocusEvent e)
+				{
+					String hwText = hardwareId.getText().trim();
+					if (hwText.isEmpty()) return;
+					
+					int occurrences = 0;
+					occurrences += countHwOccurrences(redPlayerHwId, hwText);
+					occurrences += countHwOccurrences(greenPlayerHwId, hwText);
+					
+					if (occurrences > 1)
+					{
+						JOptionPane.showMessageDialog(Gui.this, "Hardware ID " + hwText + " is already assigned to another player!", "Hardware Conflict", JOptionPane.ERROR_MESSAGE);
+						hardwareId.setText("");
+					}
+				}
+			});
         }
         
         teamPanel.add(list, BorderLayout.CENTER); 
         
         return teamPanel;
     }
+
+	private int countIdOccurrences(ArrayList<JTextField> idList, String idText)
+	{
+		int count = 0;
+		for (JTextField field : idList)
+		{
+			if (field.getText().trim().equals(idText))
+			{
+				count++;
+			}
+		}
+		return count;
+	}
+	
+	private int countHwOccurrences(ArrayList<JTextField> hwList, String hwText) 
+	{
+		int count = 0;
+		for (JTextField field : hwList) 
+		{
+			if (field.getText().trim().equals(hwText)) 
+			{
+				count++;
+			}
+		}
+		return count;
+	}
 
     private void sendDataToDatabase() 
     {
@@ -472,7 +530,7 @@ public class Gui extends JFrame {
 						// mark this combination as "Sent"
 						synchronizedPlayers.add(currentPair);
 						
-						System.out.println("Syncing: " + name + " (ID: " + id + ") to Hardware: " + hwId);
+						System.out.println("Syncing: " + name + " (ID: " + id + ") to Hardware: " + hwId + "\nHardware ID: " + hwId + " transmitted to system for registration.");
 					}
 				}
 				catch (NumberFormatException e) 

@@ -79,7 +79,6 @@ public class udpSend implements Runnable
 		}
 		else if (message != null)
 		{
-			System.out.println("Transmitting hardware id: '" + message + "' to the system for registration of hardware.");
 			try
 			{
 				byte[] buf = message.getBytes();
