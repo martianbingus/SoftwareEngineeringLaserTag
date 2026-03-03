@@ -56,13 +56,41 @@ public class udpSend implements Runnable
         // c = controller;
 
 	public void send(String message) {
-        try {
-            byte[] buf = message.getBytes();
-            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 7500);
-            ds.send(DpSend);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		if (message != null && (message.contains("221") || message.contains("202")))
+		{
+			if (message.contains("221"))
+			{
+				System.out.println("Game stop code sent to system.");
+			}
+			else if (message.contains("202"))
+			{
+				System.out.println("Game start code sent to system.");
+			}
+			try
+			{
+				byte[] buf = message.getBytes();
+				DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 7500);
+				ds.send(DpSend);
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
+		}
+		else if (message != null)
+		{
+			System.out.println("Transmitting hardware id: '" + message + "' to the system for registration of hardware.");
+			try
+			{
+				byte[] buf = message.getBytes();
+				DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 7500);
+				ds.send(DpSend);
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
+		}
     }
 
 

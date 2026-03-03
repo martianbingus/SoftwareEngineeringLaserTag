@@ -25,9 +25,12 @@ public class Gui extends JFrame {
     private ArrayList<JTextField> greenPlayerName = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerHwId = new ArrayList<>();
 
-    private Laser laser; //Reference to the main Laser class
+    private Laser laser; // reference to the main Laser class
 
     private JTextField ipField;
+    
+    // hashset to store hw ids sent to the system already
+	private java.util.HashSet<PlayerSync> synchronizedPlayers = new java.util.HashSet<>();
 
     public Gui(Laser laser, udpSend sender, udpReceive receiver) 
     {
@@ -64,6 +67,41 @@ public class Gui extends JFrame {
         splashTimer.setRepeats(false);
         splashTimer.start();
     }
+    
+    // class to allow for players to be synched with the database and photon system to ensure hw ids are transmitted to the system only when they have not been sent yet
+    // overriding equals and hashcode so the hashset can compare them accurately
+    private static class PlayerSync
+    {
+		int playerId;
+		String hwId;
+		
+		PlayerSync(int playerId, String hwId)
+		{
+			this.playerId = playerId;
+			this.hwId = hwId;
+		}
+		
+		@Override
+		public boolean equals(Object o)
+		{
+			if (this == o)
+			{
+				return true;
+			}
+			if (o == null || getClass() != o.getClass())
+			{
+				return false;
+			}
+			PlayerSync that = (PlayerSync) o;
+			return playerId == that.playerId && hwId.equals(that.hwId);
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return java.util.Objects.hash(playerId, hwId);
+		}
+	} 
 
     /*
     Public "Console-Like" Functions for UDP Classes
@@ -324,8 +362,9 @@ public class Gui extends JFrame {
             playerId.setBorder(BorderFactory.createLineBorder(teamColor, 2));
             playerId.setHorizontalAlignment(JTextField.CENTER);
             list.add(playerId, c);
-
+            
             //Name Column (Editable Text Field)
+            // moved so as to allow for 'name' JTextField access so the focus listener can allow for autofilling of codename
             c.gridx = 1;
             c.weightx = 0.6; //60% Width
             JTextField name = new JTextField();
@@ -336,6 +375,34 @@ public class Gui extends JFrame {
             name.setBorder(BorderFactory.createLineBorder(teamColor, 2));
             name.setHorizontalAlignment(JTextField.CENTER);
             list.add(name, c);
+            
+            playerId.addFocusListener(new java.awt.event.FocusAdapter() 
+            {
+				@Override
+				public void focusLost(java.awt.event.FocusEvent e) 
+				{
+					String idText = playerId.getText().trim();
+					if (!idText.isEmpty()) 
+					{
+						try 
+						{
+							int id = Integer.parseInt(idText);
+							// query the database via the laser reference
+							String existingName = laser.getCodename(id);
+							
+							if (existingName != null && !existingName.isEmpty()) 
+							{
+								// fill the corresponding name field
+								name.setText(existingName);
+							}
+						} 
+						catch (NumberFormatException ex) 
+						{
+							// ignore if id isnt valid
+						}
+					}
+				}
+			});
 
             //Hardware ID Column (Editable Text Field)
             c.gridx = 2;
@@ -365,39 +432,56 @@ public class Gui extends JFrame {
         return teamPanel;
     }
 
-    private void sendDataToDatabase() {
-        // red team database entries
-        for (int i = 0; i < redPlayerName.size(); i++) 
-        {
-            // get the data from the text fields
-            String name = redPlayerName.get(i).getText().trim();
-            String idText = redPlayerId.get(i).getText().trim();
-            String hwId = redPlayerHwId.get(i).getText().trim();
-            if (!name.isEmpty() && !idText.isEmpty()) 
-            {
-                // add the player to the database, parse the id text to an integer
-                int id = Integer.parseInt(idText);
-                laser.addPlayer(id, name, hwId);
-                sender.send(hwId);
-            }
-        }
-        // green team database entries
-        for (int i = 0; i < greenPlayerName.size(); i++) 
-        {
-            // get the data from the text fields
-            String name = greenPlayerName.get(i).getText().trim();
-            String idText = greenPlayerId.get(i).getText().trim();
-            String hwId = greenPlayerHwId.get(i).getText().trim();
-            if (!name.isEmpty() && !idText.isEmpty()) 
-            {
-                // add the player to the database, parse the id text to an integer
-                int id = Integer.parseInt(idText);
-                laser.addPlayer(id, name, hwId);
-                sender.send(hwId);
-            }
-        }
-        System.out.println("Data successfully dispatched to PostgreSQL.");
+    private void sendDataToDatabase() 
+    {
+        // Process Red Team
+		processTeamTransmission(redPlayerId, redPlayerName, redPlayerHwId);
+		
+		// Process Green Team
+		processTeamTransmission(greenPlayerId, greenPlayerName, greenPlayerHwId);
     }
+    
+    // helper function made to stop writing the same code twice
+    private void processTeamTransmission(ArrayList<JTextField> idFields, ArrayList<JTextField> nameFields, ArrayList<JTextField> hwFields)
+    {
+		for (int i = 0; i < idFields.size(); i++) 
+		{
+			String name = nameFields.get(i).getText().trim();
+			String idText = idFields.get(i).getText().trim();
+			String hwId = hwFields.get(i).getText().trim();
+
+			if (!name.isEmpty() && !idText.isEmpty() && !hwId.isEmpty()) 
+			{
+				try 
+				{
+					int id = Integer.parseInt(idText);
+					PlayerSync currentPair = new PlayerSync(id, hwId);
+
+					// check if this specific player, hwid combo has been sent yet
+					if (!synchronizedPlayers.contains(currentPair)) 
+					{
+						// check if player id already in database. if it isnt, add them
+						if (laser.getCodename(id) == null)
+						{
+							laser.addPlayer(id, name, hwId);
+						}
+						
+						// hardware transmission
+						sender.send(hwId);
+						
+						// mark this combination as "Sent"
+						synchronizedPlayers.add(currentPair);
+						
+						System.out.println("Syncing: " + name + " (ID: " + id + ") to Hardware: " + hwId);
+					}
+				}
+				catch (NumberFormatException e) 
+				{
+					// Handle non-integer ID input
+				}
+			}
+		}
+	}
 
     private void startGame() {
         // update ip target based on input
