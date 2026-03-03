@@ -17,7 +17,7 @@ public class Database {
     //for dumb reasons, I couldn't handle the SQLException in the constructor, so you'll need to use try-catch when you call Database()
     Database() throws SQLException
     {
-	try
+		try
        	{
         	// Explicitly load the driver class
         	Class.forName("org.postgresql.Driver");
@@ -27,23 +27,12 @@ public class Database {
         	System.err.println("PostgreSQL JDBC Driver not found. Add the JAR to your classpath!");
         	e.printStackTrace();
     	}
-<<<<<<< HEAD
-		// url, user, pass provided by instructor for correct connection type.
-		String url = "jdbc:postgresql://localhost/photon";
-		String user = "student";
-		String password = "student";   // now required
-		this.connection = DriverManager.getConnection(url, user, password);
-		
-		// previous connection type
-=======
-	Properties props = new Properties();
-	props.setProperty("user", "student");
-	props.setProperty("password", "student");
-	props.put("socketFactory", "org.newsclub.net.unix.AFUNIXSocketFactory$FactoryArg");
-	props.put("socketFactoryArg", "/var/run/postgresql/.s.PGSQL.5432");
-	this.connection = DriverManager.getConnection("jdbc:postgresql://localhost/photon", props);
->>>>>>> TestBranch
-        // this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "student");
+		Properties props = new Properties();
+		props.setProperty("user", "student");
+		props.setProperty("password", "student");
+		props.put("socketFactory", "org.newsclub.net.unix.AFUNIXSocketFactory$FactoryArg");
+		props.put("socketFactoryArg", "/var/run/postgresql/.s.PGSQL.5432");
+		this.connection = DriverManager.getConnection("jdbc:postgresql://localhost/photon", props);
     }
 
     //verifies that a given id is listed on the database
