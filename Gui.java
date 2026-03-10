@@ -666,7 +666,7 @@ public class Gui extends JFrame {
         cardLayout.show(mainPanel, "COUNTDOWN");
 
         //start 5 second countDown
-        startCountdownTimer(5);
+        startCountdownTimer(30);
 
         //actionDisplay.setText("Game Started. Waiting for data...\n");
     }
