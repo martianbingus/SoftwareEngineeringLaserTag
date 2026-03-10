@@ -32,6 +32,10 @@ public class Gui extends JFrame {
     // hashset to store hw ids sent to the system already
 	private java.util.HashSet<PlayerSync> synchronizedPlayers = new java.util.HashSet<>();
 
+    private JTextArea redStats;
+    private JTextArea greenStats;
+    private JTextArea eventLog;
+
     public Gui(Laser laser, udpSend sender, udpReceive receiver) 
     {
         this.sender = sender;
@@ -246,23 +250,58 @@ public class Gui extends JFrame {
 
     private JPanel createGameActionScreen() {
         JPanel panel = new JPanel(new BorderLayout());
-        
-        actionDisplay = new JTextArea();
-        actionDisplay.setEditable(false);
-        actionDisplay.setBackground(Color.BLACK);
-        actionDisplay.setForeground(Color.CYAN);
-        actionDisplay.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        
-        panel.add(new JScrollPane(actionDisplay), BorderLayout.CENTER);
-        
+        panel.setBackground(Color.BLACK);
+
+        JPanel statsPanel = new JPanel(new GridLayout(1, 3, 10, 0));
+        statsPanel.setBackground(Color.BLACK);
+        statsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        statsPanel.add(createStatBox("RED TEAM", Color.RED));
+        statsPanel.add(createStatBox("GAME EVENTS", Color.CYAN));
+        statsPanel.add(createStatBox("GREEN TEAM", Color.GREEN));
+
+        panel.add(statsPanel, BorderLayout.CENTER);
+
         JButton stopButton = new JButton("Stop Game");
         stopButton.addActionListener(e -> {
-            sender.send("221"); //Send Stop Code
+            sender.send("221");
             cardLayout.show(mainPanel, "ENTRY");
         });
         panel.add(stopButton, BorderLayout.SOUTH);
-        
+
         return panel;
+    }
+
+    //Used thrice to build the Game Action Screen
+    private JPanel createStatBox(String title, Color borderColor) {
+        JPanel box = new JPanel(new BorderLayout());
+        box.setBackground(Color.BLACK);
+        
+        box.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(borderColor, 2), 
+            title,
+            javax.swing.border.TitledBorder.CENTER,
+            javax.swing.border.TitledBorder.TOP,
+            new Font("Monospaced", Font.BOLD, 16),
+            borderColor
+        ));
+
+        JTextArea textArea = new JTextArea();
+        textArea.setEditable(false);
+        textArea.setBackground(Color.BLACK);
+        textArea.setForeground(borderColor);
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+
+        if (title.equals("RED TEAM")) {
+            redStats = textArea;
+        } else if (title.equals("GREEN TEAM")) {
+            greenStats = textArea;
+        } else {
+            eventLog = textArea;
+        }
+
+        box.add(new JScrollPane(textArea), BorderLayout.CENTER);
+        return box;
     }
 
     private void updateTeamPanels(int totalPlayers) {
@@ -547,7 +586,28 @@ public class Gui extends JFrame {
         sender.setTargetIp(ipInput);
 
         cardLayout.show(mainPanel, "GAME");
-        actionDisplay.setText("Game Started. Waiting for data...\n");
+        //actionDisplay.setText("Game Started. Waiting for data...\n");
+
+        redStats.setText("");
+        greenStats.setText("");
+        eventLog.setText("WIP, stay tuned\nfor sprint 4 :3");
+
+        for (int i = 0; i < redPlayerName.size(); i++)
+        {
+            String name = redPlayerName.get(i).getText().trim();
+            if (!name.isEmpty()) {
+                redStats.append(name + "\t Score: 0\n");
+            }
+        }
+
+        for (int i = 0; i < greenPlayerName.size(); i++)
+        {
+            String name = greenPlayerName.get(i).getText().trim();
+            if (!name.isEmpty()) {
+                greenStats.append(name + "\t Score: 0\n");
+            }
+        }
+
         sender.send("202"); //Send Start Code
     }
 }
