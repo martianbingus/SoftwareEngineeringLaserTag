@@ -137,8 +137,14 @@ public class Gui extends JFrame {
         footer.setBackground(Color.DARK_GRAY);
         
         // Container to stack buttons vertically
-        JPanel buttonContainer = new JPanel(new GridLayout(2, 1, 0, 10));
+        JPanel buttonContainer = new JPanel(new GridLayout(3, 1, 0, 10));
         buttonContainer.setBackground(Color.DARK_GRAY);
+
+        JButton clearButton = new JButton("CLEAR ENTRIES (F9)");
+        clearButton.setPreferredSize(new Dimension(200, 50));
+        clearButton.setBackground(Color.BLACK);
+        clearButton.setForeground(Color.RED);
+        clearButton.addActionListener(e -> clearPlayerEntries());
 
         JButton sendDataButton = new JButton("SEND DATA");
         sendDataButton.setPreferredSize(new Dimension(200, 50));
@@ -152,6 +158,7 @@ public class Gui extends JFrame {
         startButton.setForeground(Color.CYAN);
         startButton.addActionListener(e -> startGame());
 
+        buttonContainer.add(clearButton);
         buttonContainer.add(sendDataButton);
         buttonContainer.add(startButton);
 
@@ -161,9 +168,15 @@ public class Gui extends JFrame {
         //F5 Keybinding to Start Game
         InputMap im = panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = panel.getActionMap();
+
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "startGame");
         am.put("startGame", new AbstractAction() { 
             @Override public void actionPerformed(ActionEvent e) { startGame(); } 
+        });
+
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0), "clearEntries");
+        am.put("clearEntries", new AbstractAction() { 
+            @Override public void actionPerformed(ActionEvent e) { clearPlayerEntries(); } 
         });
 
         // ip address input and send button
@@ -397,6 +410,15 @@ public class Gui extends JFrame {
             }
         }
         System.out.println("Data successfully dispatched to PostgreSQL.");
+    }
+
+    private void clearPlayerEntries() {
+        for (JTextField tf : redPlayerId) tf.setText("");
+        for (JTextField tf : redPlayerName) tf.setText("");
+        for (JTextField tf : redPlayerHwId) tf.setText("");
+        for (JTextField tf : greenPlayerId) tf.setText("");
+        for (JTextField tf : greenPlayerName) tf.setText("");
+        for (JTextField tf : greenPlayerHwId) tf.setText("");
     }
 
     private void startGame() {
