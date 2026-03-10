@@ -15,5 +15,5 @@ sudo apt install -y python3
 sudo apt install -y postgresql
 
 echo "Installation complete!"
-echo "You can now compile the project using: javac \".:junixsocket-common-2.10.1.jar:junixsocket-native-common-2.10.1.jar:postgresql-42.7.10.jar\" *.java"
+echo "You can now compile the project using: javac -cp \".:junixsocket-common-2.10.1.jar:junixsocket-native-common-2.10.1.jar:postgresql-42.7.10.jar\" *.java"
 echo "And run it using: java -cp \".:junixsocket-common-2.10.1.jar:junixsocket-native-common-2.10.1.jar:postgresql-42.7.10.jar\" Laser"
