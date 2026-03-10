@@ -7,13 +7,13 @@ Member Names:    Matt Wells    |    Marvin Barnett    |     Gene Rupp     |    R
 INSTRUCTIONS TO RUN:                                                                                  
     Open VirtualBox                                                                               
     Clone our repository                                                                          
-        git clone -b TestBranch https://github.com/martianbingus/SoftwareEngineeringLaserTag.git                
+        git clone https://github.com/martianbingus/SoftwareEngineeringLaserTag.git                
     Change directory to our repo                                                                  
         cd SoftwareEngineeringLaserTag                                                            
-    Run install script                                                                            
-        chmod +x install.sh                                                                       
+    Run install script                                                                                                                                               
         ./install.sh                                                                              
     Compile the code                                                                              
         javac -cp ".:junixsocket-common-2.10.1.jar:junixsocket-native-common-2.10.1.jar:postgresql-42.7.10.jar" *.java                                                                              
     Launch the code                                                                               
         java -cp ".:junixsocket-common-2.10.1.jar:junixsocket-native-common-2.10.1.jar:postgresql-42.7.10.jar" Laser
+

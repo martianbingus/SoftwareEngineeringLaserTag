@@ -40,10 +40,23 @@ public class Laser
         }
         else
         {
-            database.updateEntry(id, codename);
-            System.out.println("Player with player id " + id + " already exists in the database. Changed codename to " + codename);
+            System.out.println("Player with player id " + id + " aleady exists in the database.");
         }
     }
+    
+    public String getCodename(int id)
+    {
+		String ret = null;
+		try
+		{
+			ret = database.getCodename(id);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return ret;
+	}
 
     public void run()
     {

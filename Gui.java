@@ -25,9 +25,21 @@ public class Gui extends JFrame {
     private ArrayList<JTextField> greenPlayerName = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerHwId = new ArrayList<>();
 
-    private Laser laser; //Reference to the main Laser class
+    private Laser laser; // reference to the main Laser class
 
     private JTextField ipField;
+    
+    // hashset to store hw ids sent to the system already
+	private java.util.HashSet<PlayerSync> synchronizedPlayers = new java.util.HashSet<>();
+
+    private JTextArea redStats;
+    private JTextArea greenStats;
+    private JTextArea eventLog;
+
+    //Game-start countdown timer vars
+    private JLabel countdownLabel;
+    private Timer gameCountdownTimer;
+    private int secondsRemaining;
 
     public Gui(Laser laser, udpSend sender, udpReceive receiver) 
     {
@@ -51,6 +63,7 @@ public class Gui extends JFrame {
 
         mainPanel.add(createSplashScreen(), "SPLASH");
         mainPanel.add(createPlayerEntryScreen(), "ENTRY");
+        mainPanel.add(createCountdownScreen(), "COUNTDOWN");
         mainPanel.add(createGameActionScreen(), "GAME");
 
         add(mainPanel);
@@ -64,6 +77,41 @@ public class Gui extends JFrame {
         splashTimer.setRepeats(false);
         splashTimer.start();
     }
+    
+    // class to allow for players to be synched with the database and photon system to ensure hw ids are transmitted to the system only when they have not been sent yet
+    // overriding equals and hashcode so the hashset can compare them accurately
+    private static class PlayerSync
+    {
+		int playerId;
+		String hwId;
+		
+		PlayerSync(int playerId, String hwId)
+		{
+			this.playerId = playerId;
+			this.hwId = hwId;
+		}
+		
+		@Override
+		public boolean equals(Object o)
+		{
+			if (this == o)
+			{
+				return true;
+			}
+			if (o == null || getClass() != o.getClass())
+			{
+				return false;
+			}
+			PlayerSync that = (PlayerSync) o;
+			return playerId == that.playerId && hwId.equals(that.hwId);
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return java.util.Objects.hash(playerId, hwId);
+		}
+	} 
 
     /*
     Public "Console-Like" Functions for UDP Classes
@@ -219,25 +267,86 @@ public class Gui extends JFrame {
         return panel;
     }
 
+
+    private JPanel createCountdownScreen()
+    {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(Color.BLACK);
+
+        JLabel warningLabel = new JLabel("Game Starting");
+        warningLabel.setForeground(Color.CYAN);
+        warningLabel.setFont(new Font("Monospaced", Font.BOLD, 100));
+
+        countdownLabel = new JLabel("5");
+        countdownLabel.setForeground(Color.RED);
+        countdownLabel.setFont(new Font("Monospaced", Font.BOLD, 100));
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        panel.add(warningLabel, c);
+
+        c.gridy = 1;
+        panel.add(countdownLabel, c);
+
+        return panel;
+    }
+
+
     private JPanel createGameActionScreen() {
         JPanel panel = new JPanel(new BorderLayout());
-        
-        actionDisplay = new JTextArea();
-        actionDisplay.setEditable(false);
-        actionDisplay.setBackground(Color.BLACK);
-        actionDisplay.setForeground(Color.CYAN);
-        actionDisplay.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        
-        panel.add(new JScrollPane(actionDisplay), BorderLayout.CENTER);
-        
+        panel.setBackground(Color.BLACK);
+
+        JPanel statsPanel = new JPanel(new GridLayout(1, 3, 10, 0));
+        statsPanel.setBackground(Color.BLACK);
+        statsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        statsPanel.add(createStatBox("RED TEAM", Color.RED));
+        statsPanel.add(createStatBox("GAME EVENTS", Color.CYAN));
+        statsPanel.add(createStatBox("GREEN TEAM", Color.GREEN));
+
+        panel.add(statsPanel, BorderLayout.CENTER);
+
         JButton stopButton = new JButton("Stop Game");
         stopButton.addActionListener(e -> {
-            sender.send("221"); //Send Stop Code
+            sender.send("221");
             cardLayout.show(mainPanel, "ENTRY");
         });
         panel.add(stopButton, BorderLayout.SOUTH);
-        
+
         return panel;
+    }
+
+    //Used thrice to build the Game Action Screen
+    private JPanel createStatBox(String title, Color borderColor) {
+        JPanel box = new JPanel(new BorderLayout());
+        box.setBackground(Color.BLACK);
+        
+        box.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(borderColor, 2), 
+            title,
+            javax.swing.border.TitledBorder.CENTER,
+            javax.swing.border.TitledBorder.TOP,
+            new Font("Monospaced", Font.BOLD, 16),
+            borderColor
+        ));
+
+        JTextArea textArea = new JTextArea();
+        textArea.setEditable(false);
+        textArea.setBackground(Color.BLACK);
+        textArea.setForeground(borderColor);
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+
+        if (title.equals("RED TEAM")) {
+            redStats = textArea;
+        } else if (title.equals("GREEN TEAM")) {
+            greenStats = textArea;
+        } else {
+            eventLog = textArea;
+        }
+
+        box.add(new JScrollPane(textArea), BorderLayout.CENTER);
+        return box;
     }
 
     private void updateTeamPanels(int totalPlayers) {
@@ -337,8 +446,9 @@ public class Gui extends JFrame {
             playerId.setBorder(BorderFactory.createLineBorder(teamColor, 2));
             playerId.setHorizontalAlignment(JTextField.CENTER);
             list.add(playerId, c);
-
+            
             //Name Column (Editable Text Field)
+            // moved so as to allow for 'name' JTextField access so the focus listener can allow for autofilling of codename
             c.gridx = 1;
             c.weightx = 0.6; //60% Width
             JTextField name = new JTextField();
@@ -349,7 +459,7 @@ public class Gui extends JFrame {
             name.setBorder(BorderFactory.createLineBorder(teamColor, 2));
             name.setHorizontalAlignment(JTextField.CENTER);
             list.add(name, c);
-
+            
             //Hardware ID Column (Editable Text Field)
             c.gridx = 2;
             c.weightx = 0.2; //20% Width
@@ -371,6 +481,66 @@ public class Gui extends JFrame {
                 greenPlayerName.add(name);
                 greenPlayerHwId.add(hardwareId);
             }
+            
+            playerId.addFocusListener(new java.awt.event.FocusAdapter() 
+            {
+				@Override
+				public void focusLost(java.awt.event.FocusEvent e) 
+				{
+					String idText = playerId.getText().trim();
+					if (idText.isEmpty()) return;
+					
+					try 
+					{
+						int id = Integer.parseInt(idText);
+						
+						// if id has been used already somewhere else, dont allow it
+						int occurrences = 0;
+						occurrences += countIdOccurrences(redPlayerId, idText);
+						occurrences += countIdOccurrences(greenPlayerId, idText);
+						if (occurrences > 1)
+						{
+							JOptionPane.showMessageDialog(Gui.this, "Player ID " + id + " has already been entered on the entry screen.", "Duplicate Entry", JOptionPane.WARNING_MESSAGE);
+							playerId.setText("");
+							name.setText("");
+							return;
+						}
+						
+						// query the database via the laser reference
+						String existingName = laser.getCodename(id);
+						
+						if (existingName != null && !existingName.isEmpty()) 
+						{
+							// fill the corresponding name field
+							name.setText(existingName);
+						}
+					} 
+					catch (NumberFormatException ex) 
+					{
+						// ignore if id isnt valid
+					}
+				}
+			});
+			
+			hardwareId.addFocusListener(new java.awt.event.FocusAdapter()
+			{
+				@Override
+				public void focusLost(java.awt.event.FocusEvent e)
+				{
+					String hwText = hardwareId.getText().trim();
+					if (hwText.isEmpty()) return;
+					
+					int occurrences = 0;
+					occurrences += countHwOccurrences(redPlayerHwId, hwText);
+					occurrences += countHwOccurrences(greenPlayerHwId, hwText);
+					
+					if (occurrences > 1)
+					{
+						JOptionPane.showMessageDialog(Gui.this, "Hardware ID " + hwText + " is already assigned to another player!", "Hardware Conflict", JOptionPane.ERROR_MESSAGE);
+						hardwareId.setText("");
+					}
+				}
+			});
         }
         
         teamPanel.add(list, BorderLayout.CENTER); 
@@ -378,38 +548,105 @@ public class Gui extends JFrame {
         return teamPanel;
     }
 
-    private void sendDataToDatabase() {
-        // red team database entries
-        for (int i = 0; i < redPlayerName.size(); i++) 
+	private int countIdOccurrences(ArrayList<JTextField> idList, String idText)
+	{
+		int count = 0;
+		for (JTextField field : idList)
+		{
+			if (field.getText().trim().equals(idText))
+			{
+				count++;
+			}
+		}
+		return count;
+	}
+	
+	private int countHwOccurrences(ArrayList<JTextField> hwList, String hwText) 
+	{
+		int count = 0;
+		for (JTextField field : hwList) 
+		{
+			if (field.getText().trim().equals(hwText)) 
+			{
+				count++;
+			}
+		}
+		return count;
+	}
+
+    private void sendDataToDatabase() 
+    {
+        // Process Red Team
+		processTeamTransmission(redPlayerId, redPlayerName, redPlayerHwId);
+		
+		// Process Green Team
+		processTeamTransmission(greenPlayerId, greenPlayerName, greenPlayerHwId);
+    }
+    
+    // helper function made to stop writing the same code twice
+    private void processTeamTransmission(ArrayList<JTextField> idFields, ArrayList<JTextField> nameFields, ArrayList<JTextField> hwFields)
+    {
+		for (int i = 0; i < idFields.size(); i++) 
+		{
+			String name = nameFields.get(i).getText().trim();
+			String idText = idFields.get(i).getText().trim();
+			String hwId = hwFields.get(i).getText().trim();
+
+			if (!name.isEmpty() && !idText.isEmpty() && !hwId.isEmpty()) 
+			{
+				try 
+				{
+					int id = Integer.parseInt(idText);
+					PlayerSync currentPair = new PlayerSync(id, hwId);
+
+					// check if this specific player, hwid combo has been sent yet
+					if (!synchronizedPlayers.contains(currentPair)) 
+					{
+						// check if player id already in database. if it isnt, add them
+						if (laser.getCodename(id) == null)
+						{
+							laser.addPlayer(id, name, hwId);
+						}
+						
+						// hardware transmission
+						sender.send(hwId);
+						
+						// mark this combination as "Sent"
+						synchronizedPlayers.add(currentPair);
+						
+						System.out.println("Syncing: " + name + " (ID: " + id + ") to Hardware: " + hwId + "\nHardware ID: " + hwId + " transmitted to system for registration.");
+					}
+				}
+				catch (NumberFormatException e) 
+				{
+					// Handle non-integer ID input
+				}
+			}
+		}
+	}
+
+    private void startCountdownTimer(int duration)
+    {
+        secondsRemaining = duration;
+        countdownLabel.setText(String.valueOf(secondsRemaining));
+
+        if (gameCountdownTimer != null && gameCountdownTimer.isRunning())
         {
-            // get the data from the text fields
-            String name = redPlayerName.get(i).getText().trim();
-            String idText = redPlayerId.get(i).getText().trim();
-            String hwId = redPlayerHwId.get(i).getText().trim();
-            if (!name.isEmpty() && !idText.isEmpty()) 
-            {
-                // add the player to the database, parse the id text to an integer
-                int id = Integer.parseInt(idText);
-                laser.addPlayer(id, name, hwId);
-                sender.send(hwId);
-            }
+            gameCountdownTimer.stop();
         }
-        // green team database entries
-        for (int i = 0; i < greenPlayerName.size(); i++) 
-        {
-            // get the data from the text fields
-            String name = greenPlayerName.get(i).getText().trim();
-            String idText = greenPlayerId.get(i).getText().trim();
-            String hwId = greenPlayerHwId.get(i).getText().trim();
-            if (!name.isEmpty() && !idText.isEmpty()) 
+
+        gameCountdownTimer = new Timer(1000, e -> { //this is a funky new thing i found out about
+            secondsRemaining--;
+            countdownLabel.setText(String.valueOf(secondsRemaining));
+
+            if (secondsRemaining <= 0)
             {
-                // add the player to the database, parse the id text to an integer
-                int id = Integer.parseInt(idText);
-                laser.addPlayer(id, name, hwId);
-                sender.send(hwId);
+                gameCountdownTimer.stop();
+                transitionToGame();
             }
-        }
-        System.out.println("Data successfully dispatched to PostgreSQL.");
+        }); // <---
+
+        gameCountdownTimer.start();
     }
 
     private void clearPlayerEntries() {
@@ -426,8 +663,38 @@ public class Gui extends JFrame {
         String ipInput = this.ipField.getText().trim();
         sender.setTargetIp(ipInput);
 
+        cardLayout.show(mainPanel, "COUNTDOWN");
+
+        //start 5 second countDown
+        startCountdownTimer(5);
+
+        //actionDisplay.setText("Game Started. Waiting for data...\n");
+    }
+
+    //STARTGAME BASICALLY MOVED TO HERE :) -Matt
+    private void transitionToGame() {
         cardLayout.show(mainPanel, "GAME");
-        actionDisplay.setText("Game Started. Waiting for data...\n");
-        sender.send("202"); //Send Start Code
+
+        redStats.setText("");
+        greenStats.setText("");
+        eventLog.setText("WIP, stay tuned\nfor sprint 4 :3");
+
+        for (int i = 0; i < redPlayerName.size(); i++)
+        {
+            String name = redPlayerName.get(i).getText().trim();
+            if (!name.isEmpty()) {
+                redStats.append(name + "\t Score: 0\n");
+            }
+        }
+
+        for (int i = 0; i < greenPlayerName.size(); i++)
+        {
+            String name = greenPlayerName.get(i).getText().trim();
+            if (!name.isEmpty()) {
+                greenStats.append(name + "\t Score: 0\n");
+            }
+        }
+
+        sender.send("202"); //Send Start Code after countdown finishes
     }
 }

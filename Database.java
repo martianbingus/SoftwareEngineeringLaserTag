@@ -17,7 +17,7 @@ public class Database {
     //for dumb reasons, I couldn't handle the SQLException in the constructor, so you'll need to use try-catch when you call Database()
     Database() throws SQLException
     {
-	try
+		try
        	{
         	// Explicitly load the driver class
         	Class.forName("org.postgresql.Driver");
@@ -27,13 +27,12 @@ public class Database {
         	System.err.println("PostgreSQL JDBC Driver not found. Add the JAR to your classpath!");
         	e.printStackTrace();
     	}
-	Properties props = new Properties();
-	props.setProperty("user", "student");
-	props.setProperty("password", "student");
-	props.put("socketFactory", "org.newsclub.net.unix.AFUNIXSocketFactory$FactoryArg");
-	props.put("socketFactoryArg", "/var/run/postgresql/.s.PGSQL.5432");
-	this.connection = DriverManager.getConnection("jdbc:postgresql://localhost/photon", props);
-        // this.connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/photon", "student", "student");
+		Properties props = new Properties();
+		props.setProperty("user", "student");
+		props.setProperty("password", "student");
+		props.put("socketFactory", "org.newsclub.net.unix.AFUNIXSocketFactory$FactoryArg");
+		props.put("socketFactoryArg", "/var/run/postgresql/.s.PGSQL.5432");
+		this.connection = DriverManager.getConnection("jdbc:postgresql://localhost/photon", props);
     }
 
     //verifies that a given id is listed on the database
@@ -133,6 +132,19 @@ public class Database {
     {
         this.deleteEntryById(id);
         this.insertEntry(id, codeName);
+    }
+
+    public void clear()
+    {
+        String qs = "TRUNCATE FROM players";
+        try (PreparedStatement query = connection.prepareStatement(qs))
+        {
+            //query.setString(1, codename);
+            query.executeUpdate();
+        }
+        catch (SQLException UwU) {
+            UwU.printStackTrace();
+        }
     }
 }
 
