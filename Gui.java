@@ -41,6 +41,9 @@ public class Gui extends JFrame {
     private Timer gameCountdownTimer;
     private int secondsRemaining;
 
+    // hashmap to store player id and score
+    //private java.util.Hashmap<Integer, Integer> playerScores;
+
     public Gui(Laser laser, udpSend sender, udpReceive receiver) 
     {
         this.sender = sender;
@@ -674,27 +677,47 @@ public class Gui extends JFrame {
     //STARTGAME BASICALLY MOVED TO HERE :) -Matt
     private void transitionToGame() {
         cardLayout.show(mainPanel, "GAME");
-
-        redStats.setText("");
-        greenStats.setText("");
+        updateScoreDisplays();
         eventLog.setText("WIP, stay tuned\nfor sprint 4 :3");
+        sender.send("202"); //Send Start Code after countdown finishes
+    }
 
-        for (int i = 0; i < redPlayerName.size(); i++)
+    private void updateScoreDisplays()
+    {
+        int redTotal = 0;
+        int greenTotal = 0;
+
+        // stringbuilder used in place of string to save performance
+        // (stringbuilder is a mutable object, string is not)
+        StringBuilder redContent = new StringBuilder("RED TEAM TOTAL: 0\n");
+        redContent.append("----------------------------\n");
+        for(int i = 0; i < redPlayerName.size(); i++)
         {
             String name = redPlayerName.get(i).getText().trim();
-            if (!name.isEmpty()) {
-                redStats.append(name + "\t Score: 0\n");
+            if(!name.isEmpty())
+            {
+                int playerScore = 0; // replace with score tracking variable later
+                redTotal += playerScore;
+                redContent.append(name).append("\t Score: ").append(playerScore).append("\n");
             }
         }
+        // update total
+        String redScore = Integer.toString(redTotal);
+        redStats.setText(redContent.toString().replaceFirst("TOTAL: 0", "TOTAL: " + redTotal));
 
-        for (int i = 0; i < greenPlayerName.size(); i++)
+        StringBuilder greenContent = new StringBuilder("GREEN TEAM TOTAL: 0\n");
+        greenContent.append("----------------------------\n");
+        for (int i = 0; i < greenPlayerName.size(); i++) 
         {
             String name = greenPlayerName.get(i).getText().trim();
-            if (!name.isEmpty()) {
-                greenStats.append(name + "\t Score: 0\n");
+            if (!name.isEmpty()) 
+            {
+                int playerScore = 0; // replace with score tracking variable later
+                greenTotal += playerScore;
+                greenContent.append(name).append("\t Score: ").append(playerScore).append("\n");
             }
         }
-
-        sender.send("202"); //Send Start Code after countdown finishes
+        String greenScore = Integer.toString(greenTotal);
+        greenStats.setText(greenContent.toString().replaceFirst("TOTAL: 0", "TOTAL: " + greenTotal));
     }
 }
