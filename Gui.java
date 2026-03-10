@@ -36,6 +36,11 @@ public class Gui extends JFrame {
     private JTextArea greenStats;
     private JTextArea eventLog;
 
+    //Game-start countdown timer vars
+    private JLabel countdownLabel;
+    private Timer gameCountdownTimer;
+    private int secondsRemaining;
+
     public Gui(Laser laser, udpSend sender, udpReceive receiver) 
     {
         this.sender = sender;
@@ -58,6 +63,7 @@ public class Gui extends JFrame {
 
         mainPanel.add(createSplashScreen(), "SPLASH");
         mainPanel.add(createPlayerEntryScreen(), "ENTRY");
+        mainPanel.add(createCountdownScreen(), "COUNTDOWN");
         mainPanel.add(createGameActionScreen(), "GAME");
 
         add(mainPanel);
@@ -247,6 +253,32 @@ public class Gui extends JFrame {
         }
         return panel;
     }
+
+
+    private JPanel createCountdownScreen()
+    {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(Color.BLACK);
+
+        JLabel warningLabel = new JLabel("Game Starting...");
+        warningLabel.setForeground(Color.CYAN);
+        warningLabel.setFont(new Font("Monospaced", Font.BOLD, 150));
+
+        countdownLabel = new JLabel("5");
+        countdownLabel.setForeground(Color.RED);
+        countdownLabel.setFont(new Font("Monospaced", Font.BOLD, 150));
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        panel.add(warningLabel, c);
+
+        c.gridy = 1;
+        panel.add(countdownLabel, c);
+
+        return panel;
+    }
+
 
     private JPanel createGameActionScreen() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -580,13 +612,46 @@ public class Gui extends JFrame {
 		}
 	}
 
+    private void startCountdownTimer(int duration)
+    {
+        secondsRemaining = duration;
+        countdownLabel.setText(String.valueOf(secondsRemaining));
+
+        if (gameCountdownTimer != null && gameCountdownTimer.isRunning())
+        {
+            gameCountdownTimer.stop();
+        }
+
+        gameCountdownTimer = new Timer(1000, e -> { //this is a funky new thing i found out about
+            secondsRemaining--;
+            countdownLabel.setText(String.valueOf(secondsRemaining));
+
+            if (secondsRemaining <= 0)
+            {
+                gameCountdownTimer.stop();
+                transitionToGame();
+            }
+        }); // <---
+
+        gameCountdownTimer.start();
+    }
+
     private void startGame() {
         // update ip target based on input
         String ipInput = this.ipField.getText().trim();
         sender.setTargetIp(ipInput);
 
-        cardLayout.show(mainPanel, "GAME");
+        cardLayout.show(mainPanel, "COUNTDOWN");
+
+        //start 5 second countDown
+        startCountdownTimer(5);
+
         //actionDisplay.setText("Game Started. Waiting for data...\n");
+    }
+
+    //STARTGAME BASICALLY MOVED TO HERE :) -Matt
+    private void transitionToGame() {
+        cardLayout.show(mainPanel, "GAME");
 
         redStats.setText("");
         greenStats.setText("");
@@ -608,6 +673,6 @@ public class Gui extends JFrame {
             }
         }
 
-        sender.send("202"); //Send Start Code
+        sender.send("202"); //Send Start Code after countdown finishes
     }
 }
