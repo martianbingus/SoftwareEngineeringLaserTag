@@ -260,13 +260,13 @@ public class Gui extends JFrame {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(Color.BLACK);
 
-        JLabel warningLabel = new JLabel("Game Starting...");
+        JLabel warningLabel = new JLabel("Game Starting");
         warningLabel.setForeground(Color.CYAN);
-        warningLabel.setFont(new Font("Monospaced", Font.BOLD, 150));
+        warningLabel.setFont(new Font("Monospaced", Font.BOLD, 100));
 
         countdownLabel = new JLabel("5");
         countdownLabel.setForeground(Color.RED);
-        countdownLabel.setFont(new Font("Monospaced", Font.BOLD, 150));
+        countdownLabel.setFont(new Font("Monospaced", Font.BOLD, 100));
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
