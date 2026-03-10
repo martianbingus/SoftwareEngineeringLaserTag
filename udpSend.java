@@ -1,5 +1,3 @@
-// Java program to illustrate Client side
-// Implementation using DatagramSocket
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -8,54 +6,47 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
-// Client class to send the data to the server, implements runnable to run as a thread inside main program
+// client class to send the data to the server, implements runnable to run as a thread inside main program
 public class udpSend implements Runnable
 {
-    // Need to be able to pass in internet address
-    // might need to pass in the database (code controlling it), view, and controller to update the scores and action feed
 	Scanner sc;
 	DatagramSocket ds;
 	InetAddress ip;
+	Gui gui; // reference to the GUI to update the action feed
 
-	Gui gui; // Reference to the GUI to update the action feed
-
-	udpSend(Gui gui){
+	udpSend(Gui gui)
+	{
         this.gui = gui;
         setupSocket();
     }
 
     udpSend() 
     {
-        this.gui = null; // No GUI
-        setupSocket(); // Initialize socket and scanner
+        this.gui = null;
+        setupSocket(); // initialize socket and scanner
         sc = new Scanner(System.in); // Init scanner only here
     }
 
-	void setupSocket() {
+	void setupSocket() 
+	{
     	try
 		{
-			// Step 1:Create the socket object for carrying the data
+			// create the socket object for carrying the data
 			ds = new DatagramSocket();
-			//ip = InetAddress.getLocalHost();
-			// default to localhost if no ip is set
 			if (ip == null) 
 			{
 				ip = InetAddress.getByName("127.0.0.1");
 			}
 		}
-		//two possible exceptions
 		catch (SocketException | UnknownHostException e)
 		{
 			e.printStackTrace();
 		}
     }
 
-        // possibly need the below variables passed in as well
-        // d = data;
-        // v = view;
-        // c = controller;
-
-	public void send(String message) {
+	public void send(String message) 
+	{
+		// game start code / game stop code
 		if (message != null && (message.contains("221") || message.contains("202")))
 		{
 			if (message.contains("221"))
@@ -77,6 +68,7 @@ public class udpSend implements Runnable
 				e.printStackTrace();
 			}
 		}
+		// regular message
 		else if (message != null)
 		{
 			try
@@ -110,8 +102,7 @@ public class udpSend implements Runnable
 				// the data.
 				DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 7500);
 
-				// Step 3 : invoke the send call to actually send
-				// the data.
+				// Step 3 : invoke the send call to actually send the data.
 				ds.send(DpSend);
 
 				// for testing -- send input
@@ -130,7 +121,7 @@ public class udpSend implements Runnable
 				break;
 			}
     	}
-		//cleanup :)
+		// cleanup :)
 		if (ds != null && !ds.isClosed())
 		{
 			ds.close();

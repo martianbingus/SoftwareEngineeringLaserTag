@@ -1,5 +1,3 @@
-// Java program to illustrate Server side
-// Implementation using DatagramSocket
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -7,8 +5,7 @@ import java.net.SocketException;
 
 public class udpReceive implements Runnable
 {
-    // Constructor so the connection can run in a thread in the actual program
-    // might need to pass in the database (code controlling it), view, and controller to update the scores and action feed
+    // constructor so the connection can run in a thread in the actual program
     DatagramSocket dsReceive;
 	byte[] receive;
 	DatagramPacket DpReceive;
@@ -28,17 +25,13 @@ public class udpReceive implements Runnable
 		setupSocket(); // Initialize socket and buffer
     }
 
-    	public void setGui(Gui g)
+    public void setGui(Gui g)
 	{
 		this.gui = g;
 	}
 
-	public void setupSocket() {
-		// possibly need the below variables passed in as well
-        // d = data;
-        // v = view;
-        // c = controller;
-
+	public void setupSocket() 
+	{
         // Step 1 : Create a socket to listen at port 7501
 		try 
 		{
@@ -49,7 +42,6 @@ public class udpReceive implements Runnable
 		{
 			e.printStackTrace();
 		}
-        //DatagramPacket DpReceive = null;
 	}
 
 	@Override
@@ -77,7 +69,8 @@ public class udpReceive implements Runnable
 				System.out.println("Client:-" + receivedString);
 
 				// Update the GUI action feed with the received message
-				if (gui != null) {
+				if (gui != null) 
+				{
 					gui.consoleLog("Received: " + receivedString);
 				}
 
@@ -90,12 +83,14 @@ public class udpReceive implements Runnable
                     String victimId = parts[1]; 
 
                     // BROADCAST: Send the victim's equipment ID back to port 7500
-                    if (sender != null) {
+                    if (sender != null) 
+					{
                         sender.send(victimId);
                     }
 
                     // Log to GUI for visibility
-                    if (gui != null) {
+                    if (gui != null) 
+					{
                         gui.consoleLog("Hit Detected! Broadcasted Victim ID: " + victimId);
                     }
 				}
@@ -106,10 +101,6 @@ public class udpReceive implements Runnable
 					System.out.println("Client sent bye.....EXITING");
 					break;
 				}
-
-				// Clear the buffer after every message.
-				// (matt) line commented, apparently in udp you dont need to clear buffer
-				// receive = new byte[65535];
 			}
 		}
 		catch (IOException e)
