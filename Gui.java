@@ -167,6 +167,7 @@ public class Gui extends JFrame {
 
         if (attackerIdx == -1) return; // Attacker not found
 
+        victimHw = victimHw.replaceAll("[^0-9]", ""); // clean non-numeric characters from HW ID
         // find victim name for logging purposes
         if (victimHw.equals("43")) 
         {
@@ -178,28 +179,7 @@ public class Gui extends JFrame {
         }
         else 
         {
-            if (isRedAttacker)
-            {
-                for (int i = 0; i < redPlayerHwId.size(); i++)
-                {
-                    if (redPlayerHwId.get(i).getText().equals(victimHw)) 
-                    {
-                        victimName = redPlayerName.get(i).getText();
-                        break;
-                    }
-                }
-            }
-            if (!isRedAttacker)
-            {
-                for (int i = 0; i < greenPlayerHwId.size(); i++)
-                {
-                    if (greenPlayerHwId.get(i).getText().equals(victimHw)) 
-                    {
-                        victimName = greenPlayerName.get(i).getText();
-                        break;
-                    }
-                }
-            }
+            victimName = laser.getCodename(victimHw);
         }
 
         // determine points
