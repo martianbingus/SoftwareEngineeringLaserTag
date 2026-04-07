@@ -21,11 +21,13 @@ public class Gui extends JFrame {
     private ArrayList<JTextField> redPlayerName = new ArrayList<>();
     private ArrayList<JTextField> redPlayerHwId = new ArrayList<>();
     private ArrayList<Integer> redPlayerScores = new ArrayList<>();
+    private int totalRedScore = 0;
     
     private ArrayList<JTextField> greenPlayerId = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerName = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerHwId = new ArrayList<>();
     private ArrayList<Integer> greenPlayerScores = new ArrayList<>();
+    private int totalGreenScore = 0;
 
     private Laser laser; // reference to the main Laser class
 
@@ -176,10 +178,10 @@ public class Gui extends JFrame {
 
         // update scores
         if (isRedAttacker) {
-            redScores.set(attackerIdx, redScores.get(attackerIdx) + points);
+            redPlayerScores.set(attackerIdx, redPlayerScores.get(attackerIdx) + points);
             totalRedScore += points;
         } else {
-            greenScores.set(attackerIdx, greenScores.get(attackerIdx) + points);
+            greenPlayerScores.set(attackerIdx, greenPlayerScores.get(attackerIdx) + points);
             totalGreenScore += points;
         }
     }
@@ -195,14 +197,14 @@ public class Gui extends JFrame {
     private void refreshStats() 
     {
         StringBuilder rs = new StringBuilder("RED TEAM: " + totalRedScore + "\n");
-        for (int i = 0; i < redScores.size(); i++) {
-            rs.append(redPlayerName.get(i).getText()).append(": ").append(redScores.get(i)).append("\n");
+        for (int i = 0; i < redPlayerScores.size(); i++) {
+            rs.append(redPlayerName.get(i).getText()).append(": ").append(redPlayerScores.get(i)).append("\n");
         }
         redStats.setText(rs.toString());
 
         StringBuilder gs = new StringBuilder("GREEN TEAM: " + totalGreenScore + "\n");
-        for (int i = 0; i < greenScores.size(); i++) {
-            gs.append(greenPlayerName.get(i).getText()).append(": ").append(greenScores.get(i)).append("\n");
+        for (int i = 0; i < greenPlayerScores.size(); i++) {
+            gs.append(greenPlayerName.get(i).getText()).append(": ").append(greenPlayerScores.get(i)).append("\n");
         }
         greenStats.setText(gs.toString());
     }
@@ -758,28 +760,27 @@ public class Gui extends JFrame {
     private void transitionToGame() {
         cardLayout.show(mainPanel, "GAME");
 
-        redStats.setText("");
-        greenStats.setText("");
-        eventLog.setText("Game Started\n");
+        redPlayerScores.clear();
+        greenPlayerScores.clear();
+        totalRedScore = 0;
+        totalGreenScore = 0;
 
-        for (int i = 0; i < redPlayerName.size(); i++)
+        for (JTextField tf : redPlayerName)
         {
-            String name = redPlayerName.get(i).getText().trim();
-            String score = redPlayerScores.get(i).toString();
-            if (!name.isEmpty()) {
-                redStats.append(name + "\t Score: " + score + "\n");
+            if (!tf.getText().trim().isEmpty())
+            {
+                redPlayerScores.add(0);
+            }
+        }
+        for (JTextField tf : greenPlayerName)
+        {
+            if (!tf.getText().trim().isEmpty())
+            {
+                greenPlayerScores.add(0);
             }
         }
 
-        for (int i = 0; i < greenPlayerName.size(); i++)
-        {
-            String name = greenPlayerName.get(i).getText().trim();
-            String score = greenPlayerScores.get(i).toString();
-            if (!name.isEmpty()) {
-                greenStats.append(name + "\t Score: " + score + "\n");
-            }
-        }
-
+        refreshStats();
         sender.send("202"); //Send Start Code after countdown finishes
     }
 }
