@@ -126,8 +126,8 @@ public class Gui extends JFrame {
             if (eventLog != null) {
                 String[] parts = message.split(":");
                 // parse message for attacker and victim ids, get their codenames from the database, and log "Attacker hit Victim" to the event log
-                String attackerHw = parts[0];
-                String victimHw = parts[1];
+                String attackerHw = parts[0].trim();
+                String victimHw = parts[1].trim();
                 processScore(attackerHw, victimHw);
                 refreshStats();
             }
@@ -178,7 +178,28 @@ public class Gui extends JFrame {
         }
         else 
         {
-            victimName = laser.getCodename(victimHw);
+            if (isRedAttacker)
+            {
+                for (int i = 0; i < redPlayerHwId.size(); i++)
+                {
+                    if (redPlayerHwId.get(i).getText().equals(victimHw)) 
+                    {
+                        victimName = redPlayerName.get(i).getText();
+                        break;
+                    }
+                }
+            }
+            if (!isRedAttacker)
+            {
+                for (int i = 0; i < greenPlayerHwId.size(); i++)
+                {
+                    if (greenPlayerHwId.get(i).getText().equals(victimHw)) 
+                    {
+                        victimName = greenPlayerName.get(i).getText();
+                        break;
+                    }
+                }
+            }
         }
 
         // determine points
