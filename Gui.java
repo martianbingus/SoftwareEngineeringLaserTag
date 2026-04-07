@@ -29,6 +29,8 @@ public class Gui extends JFrame {
     private ArrayList<Integer> greenPlayerScores = new ArrayList<>();
     private int totalGreenScore = 0;
 
+    private boolean baseHit = false; // flag to indicate if the last hit was a base hit, used to determine whether to add base icon to player panel
+
     private Laser laser; // reference to the main Laser class
 
     private JTextField ipField;
@@ -118,8 +120,11 @@ public class Gui extends JFrame {
 	} 
 
     /*
-    Public "Console-Like" Functions for UDP Classes
-    Call this from udpReceive to print data to the game screen.
+    called from udpReceive when a message is received from the system
+    parses the message for attacker and victim hw ids
+    passes that to processScore
+    processScore checks if it's a base or player hit, checks for friendly fire, updates scores accordingly, and logs the event to the event feed
+    refreshStats is then called to update the score boxes on the GUI with the new scores
     */
     public void consoleLog(String message) {
         SwingUtilities.invokeLater(() -> {
@@ -173,10 +178,12 @@ public class Gui extends JFrame {
         if (victimHw.equals("43")) 
         {
             victimName = "Green Base";
+            baseHit = true;
         }
         else if (victimHw.equals("53")) 
         {
             victimName = "Red Base";
+            baseHit = true;
         }
         else 
         {
@@ -255,14 +262,18 @@ public class Gui extends JFrame {
         // update event log
         eventLog.append(attackerName + " hit " + victimName + "!\n");
         eventLog.setCaretPosition(eventLog.getDocument().getLength());
+        // reset base hit flag after logging so the next hit will be processed normally
+        baseHit = false;
 
-        System.out.println("--------------------------------------------------------------------");
-        System.out.println(attackerName + " hit " + victimName + " for " + points + " points.");
-        System.out.println("Updated Score - Red Team: " + totalRedScore + ", Green Team: " + totalGreenScore);
-        System.out.println("Attacker HW ID: " + attackerHw + ", Victim HW ID: " + victimHw);
-        System.out.println("Attacker Score: " + (isRedAttacker ? redPlayerScores.get(attackerIdx) : greenPlayerScores.get(attackerIdx)));
-        System.out.println("Red Score: " + totalRedScore + ", Green Score: " + totalGreenScore);
-        System.out.println("--------------------------------------------------------------------");
+        // DEBUG LOGGING
+        // System.out.println("--------------------------------------------------------------------");
+        // System.out.println(attackerName + " hit " + victimName + " for " + points + " points.");
+        // System.out.println("Updated Score - Red Team: " + totalRedScore + ", Green Team: " + totalGreenScore);
+        // System.out.println("Attacker HW ID: " + attackerHw + ", Victim HW ID: " + victimHw);
+        // System.out.println("Attacker Score: " + (isRedAttacker ? redPlayerScores.get(attackerIdx) : greenPlayerScores.get(attackerIdx)));
+        // System.out.println("Red Score: " + totalRedScore + ", Green Score: " + totalGreenScore);
+        // System.out.println("Base Hit: " + baseHit);
+        // System.out.println("--------------------------------------------------------------------");
     }
 
     // helper to check team
