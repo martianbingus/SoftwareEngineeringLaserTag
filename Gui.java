@@ -137,6 +137,8 @@ public class Gui extends JFrame {
     private void processScore(String attackerHw, String victimHw) {
         int attackerIdx = -1;
         boolean isRedAttacker = false;
+        String attackerName = "Unknown";
+        String victimName = "Unknown";
 
         // find attacker
         for (int i = 0; i < redPlayerHwId.size(); i++) 
@@ -145,6 +147,7 @@ public class Gui extends JFrame {
             {
                 attackerIdx = i;
                 isRedAttacker = true;
+                attackerName = redPlayerName.get(i).getText();
                 break;
             }
         }
@@ -156,12 +159,27 @@ public class Gui extends JFrame {
                 {
                     attackerIdx = i;
                     isRedAttacker = false;
+                    attackerName = greenPlayerName.get(i).getText();
                     break;
                 }
             }
         }
 
         if (attackerIdx == -1) return; // Attacker not found
+
+        // find victim name for logging purposes
+        if (victimHw.equals("43")) 
+        {
+            victimName = "Green Base";
+        }
+        else if (victimHw.equals("53")) 
+        {
+            victimName = "Red Base";
+        }
+        else 
+        {
+            victimName = laser.getCodename(victimHw);
+        }
 
         // determine points
         int points = 0;
@@ -177,13 +195,20 @@ public class Gui extends JFrame {
         }
 
         // update scores
-        if (isRedAttacker) {
+        if (isRedAttacker) 
+        {
             redPlayerScores.set(attackerIdx, redPlayerScores.get(attackerIdx) + points);
             totalRedScore += points;
-        } else {
+        } 
+        else 
+        {
             greenPlayerScores.set(attackerIdx, greenPlayerScores.get(attackerIdx) + points);
             totalGreenScore += points;
         }
+
+        // update event log
+        eventLog.append(attackerName + " hit " + victimName + "!\n");
+        eventLog.setCaretPosition(eventLog.getDocument().getLength());
     }
 
     // helper to check team
