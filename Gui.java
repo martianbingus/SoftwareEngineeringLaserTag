@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import javax.swing.*;
 
 public class Gui extends JFrame {
-    //Layout Components
+    // layout Components
     private CardLayout cardLayout;
     private JPanel mainPanel;
     private JTextArea actionDisplay; 
 
-    //References to the hardware classes
+    // references to the hardware classes
     private final udpSend sender;
     private final udpReceive receiver;
 
@@ -42,10 +42,13 @@ public class Gui extends JFrame {
     private JTextArea greenStats;
     private JTextArea eventLog;
 
-    //Game-start countdown timer vars
+    // game-start countdown timer vars
     private JLabel countdownLabel;
     private Timer gameCountdownTimer;
     private int secondsRemaining;
+
+    // hashmap to store player id and score (will more than likely be needed for sprint 4)
+    // private java.util.Hashmap<Integer, Integer> playerScores;
 
     public Gui(Laser laser, udpSend sender, udpReceive receiver) 
     {
@@ -59,11 +62,11 @@ public class Gui extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
 
-        //Start Receiver Thread (Listener)
+        // start Receiver Thread (Listener)
         Thread recThread = new Thread(receiver);
         recThread.start();
 
-        //Initialize UI
+        // initialize UI
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
@@ -74,7 +77,7 @@ public class Gui extends JFrame {
 
         add(mainPanel);
 
-        //Start Flow
+        // start Flow
         cardLayout.show(mainPanel, "SPLASH");
         
         // --- TIMER ENABLED ---
@@ -126,7 +129,8 @@ public class Gui extends JFrame {
     processScore checks if it's a base or player hit, checks for friendly fire, updates scores accordingly, and logs the event to the event feed
     refreshStats is then called to update the score boxes on the GUI with the new scores
     */
-    public void consoleLog(String message) {
+    public void consoleLog(String message) 
+    {
         SwingUtilities.invokeLater(() -> {
             if (eventLog != null) 
             {
@@ -308,13 +312,16 @@ public class Gui extends JFrame {
         Image splashImage = originalIcon.getImage();
 
         // 2. Create a custom JPanel that paints the image to fill the entire area
-        // This overrides the paintComponent method to draw the image at the panel's current width/height
-        JPanel panel = new JPanel() {
+        // overrides the paintComponent method to draw the image at the panel's current width/height
+        JPanel panel = new JPanel() 
+        {
             @Override
-            protected void paintComponent(Graphics g) {
+            protected void paintComponent(Graphics g) 
+            {
                 super.paintComponent(g);
                 // Draw the image starting at (0,0) and stretching to current width/height
-                if (splashImage != null) {
+                if (splashImage != null) 
+                {
                     g.drawImage(splashImage, 0, 0, this.getWidth(), this.getHeight(), this);
                 }
             }
@@ -326,14 +333,15 @@ public class Gui extends JFrame {
         return panel;
     }
 
-    private JPanel createPlayerEntryScreen() {
+    private JPanel createPlayerEntryScreen() 
+    {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.DARK_GRAY);
 
-        //Header
+        // header
         JPanel headerContainer = new JPanel(new BorderLayout());
         
-        //Title
+        // Title
         JPanel titlePanel = new JPanel();
         titlePanel.setBackground(Color.BLACK);
         JLabel title = new JLabel("EDIT GAME CONFIGURATION");
@@ -341,23 +349,23 @@ public class Gui extends JFrame {
         title.setFont(new Font("Monospaced", Font.BOLD, 24));
         titlePanel.add(title);
         
-        //Add components to header
+        // add components to header
         headerContainer.add(titlePanel, BorderLayout.NORTH);
         headerContainer.add(createPlayerCountSelector(), BorderLayout.SOUTH);
         
         panel.add(headerContainer, BorderLayout.NORTH);
 
-        //Center Panel
+        // center Panel
         centerPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         centerPanel.setBackground(Color.DARK_GRAY);
         centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        //Initialize with default of 20 players (10 per team)
+        // initialize with default of 20 players (10 per team)
         updateTeamPanels(20);
 
         panel.add(centerPanel, BorderLayout.CENTER);
 
-        //Footer with Buttons
+        // footer with Buttons
         JPanel footer = new JPanel();
         footer.setBackground(Color.DARK_GRAY);
         
@@ -390,17 +398,19 @@ public class Gui extends JFrame {
         footer.add(buttonContainer);
         panel.add(footer, BorderLayout.SOUTH);
 
-        //F5 Keybinding to Start Game
+        // F5 Keybinding to Start Game
         InputMap im = panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = panel.getActionMap();
 
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "startGame");
-        am.put("startGame", new AbstractAction() { 
+        am.put("startGame", new AbstractAction() 
+        { 
             @Override public void actionPerformed(ActionEvent e) { startGame(); } 
         });
 
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0), "clearEntries");
-        am.put("clearEntries", new AbstractAction() { 
+        am.put("clearEntries", new AbstractAction() 
+        { 
             @Override public void actionPerformed(ActionEvent e) { clearPlayerEntries(); } 
         });
 
@@ -418,7 +428,8 @@ public class Gui extends JFrame {
         return panel;
     }
 
-    private JPanel createPlayerCountSelector() {
+    private JPanel createPlayerCountSelector() 
+    {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         panel.setBackground(Color.DARK_GRAY);
         panel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
@@ -428,15 +439,16 @@ public class Gui extends JFrame {
         label.setFont(new Font("Arial", Font.BOLD, 14));
         panel.add(label);
 
-        //10 buttons for counts: 2, 4, 6 ... 20
-        for (int i = 1; i <= 10; i++) {
+        // 10 buttons for counts: 2, 4, 6 ... 20
+        for (int i = 1; i <= 10; i++) 
+        {
             int count = i * 2;
             JButton box = new JButton(String.valueOf(count));
             box.setPreferredSize(new Dimension(50, 30));
             box.setBackground(Color.LIGHT_GRAY);
             box.setFocusPainted(false);
             
-            //When clicked, update the lists
+            // when clicked, update the lists
             box.addActionListener(e -> updateTeamPanels(count));
             
             panel.add(box);
@@ -469,8 +481,9 @@ public class Gui extends JFrame {
         return panel;
     }
 
-
-    private JPanel createGameActionScreen() {
+    // creates the screen for displaying teams and player scores, as well as the event log that displays the events that have occurred
+    private JPanel createGameActionScreen() 
+    {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.BLACK);
 
@@ -494,8 +507,9 @@ public class Gui extends JFrame {
         return panel;
     }
 
-    //Used thrice to build the Game Action Screen
-    private JPanel createStatBox(String title, Color borderColor) {
+    // used thrice to build the Game Action Screen
+    private JPanel createStatBox(String title, Color borderColor) 
+    {
         JPanel box = new JPanel(new BorderLayout());
         box.setBackground(Color.BLACK);
         
@@ -514,11 +528,16 @@ public class Gui extends JFrame {
         textArea.setForeground(borderColor);
         textArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
 
-        if (title.equals("RED TEAM")) {
+        if (title.equals("RED TEAM")) 
+        {
             redStats = textArea;
-        } else if (title.equals("GREEN TEAM")) {
+        } 
+        else if (title.equals("GREEN TEAM")) 
+        {
             greenStats = textArea;
-        } else {
+        }
+        else
+        {
             eventLog = textArea;
         }
 
@@ -526,7 +545,8 @@ public class Gui extends JFrame {
         return box;
     }
 
-    private void updateTeamPanels(int totalPlayers) {
+    private void updateTeamPanels(int totalPlayers) 
+    {
         // clear the lists of text field references since we're rebuilding
         redPlayerId.clear();
         redPlayerName.clear();
@@ -535,27 +555,28 @@ public class Gui extends JFrame {
         greenPlayerName.clear();
         greenPlayerHwId.clear();
 
-        //Calculate players per team
+        // calculate players per team
         int playersPerTeam = totalPlayers / 2;
 
-        //Clear existing components
+        // clear existing components
         centerPanel.removeAll();
 
-        //Redraw with new player counts
+        // redraw with new player counts
         centerPanel.add(createDynamicTeamPanel("RED TEAM", Color.RED, playersPerTeam));
         centerPanel.add(createDynamicTeamPanel("GREEN TEAM", Color.GREEN, playersPerTeam));
 
-        //Reload UI
+        // reload UI
         centerPanel.revalidate();
         centerPanel.repaint();
     }
 
-    //Helper to create a panel with specific number of rows
-    private JPanel createDynamicTeamPanel(String teamName, Color teamColor, int playerCount) {
+    // helper to create a panel with specific number of rows
+    private JPanel createDynamicTeamPanel(String teamName, Color teamColor, int playerCount) 
+    {
         JPanel teamPanel = new JPanel(new BorderLayout());
         teamPanel.setBackground(Color.DARK_GRAY); 
         
-        //Border with team name
+        // border with team name
         teamPanel.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(teamColor, 3), 
             teamName,
@@ -565,18 +586,18 @@ public class Gui extends JFrame {
             teamColor
         ));
 
-        //Columns: Player ID (20%), Name (60%), Hardware ID (20%)
+        // columns: Player ID (20%), Name (60%), Hardware ID (20%)
         JPanel list = new JPanel(new GridBagLayout()); 
         list.setBackground(Color.DARK_GRAY);
         
-        //Setup Constraints for the layout
+        // setup Constraints for the layout
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.insets = new Insets(5, 5, 5, 5);
         c.weighty = 1.0;
         c.gridy = 0;
 
-        //ID Header
+        // ID Header
         c.gridx = 0;
         c.weightx = 0.2; 
         JLabel h1 = new JLabel("PLAYER ID", SwingConstants.CENTER);
@@ -584,7 +605,7 @@ public class Gui extends JFrame {
         h1.setFont(new Font("Arial", Font.BOLD, 16));
         list.add(h1, c);
         
-        //Name Header
+        // Name Header
         c.gridx = 1;
         c.weightx = 0.6;
         JLabel h2 = new JLabel("NAME", SwingConstants.CENTER);
@@ -592,7 +613,7 @@ public class Gui extends JFrame {
         h2.setFont(new Font("Arial", Font.BOLD, 16));
         list.add(h2, c);
 
-        //Hardware ID Header
+        // hardware ID Header
         c.gridx = 2;
         c.weightx = 0.2;
         JLabel h3 = new JLabel("HW ID", SwingConstants.CENTER);
@@ -600,7 +621,7 @@ public class Gui extends JFrame {
         h3.setFont(new Font("Arial", Font.BOLD, 16));
         list.add(h3, c);
 
-        //Dark Team Color for the name box
+        // dark Team Color for the name box
         Color boxColor;
         if (teamColor.equals(Color.RED)) {
             boxColor = new Color(100, 0, 0);
@@ -608,11 +629,12 @@ public class Gui extends JFrame {
             boxColor = new Color(0, 100, 0);
         }
 
-        //Add Rows
-        for(int i = 0; i < playerCount; i++) {
-            c.gridy = i + 1; //Move to next row
+        // add Rows
+        for(int i = 0; i < playerCount; i++) 
+        {
+            c.gridy = i + 1; // move to next row
             
-            //Player ID Column (Editable Text Field)
+            // player ID Column (Editable Text Field)
             c.gridx = 0;
             c.weightx = 0.2; //20% Width
             JTextField playerId = new JTextField();
@@ -624,7 +646,7 @@ public class Gui extends JFrame {
             playerId.setHorizontalAlignment(JTextField.CENTER);
             list.add(playerId, c);
             
-            //Name Column (Editable Text Field)
+            // Name Column (Editable Text Field)
             // moved so as to allow for 'name' JTextField access so the focus listener can allow for autofilling of codename
             c.gridx = 1;
             c.weightx = 0.6; //60% Width
@@ -637,7 +659,7 @@ public class Gui extends JFrame {
             name.setHorizontalAlignment(JTextField.CENTER);
             list.add(name, c);
             
-            //Hardware ID Column (Editable Text Field)
+            // hardware ID Column (Editable Text Field)
             c.gridx = 2;
             c.weightx = 0.2; //20% Width
             JTextField hardwareId = new JTextField();
@@ -649,11 +671,14 @@ public class Gui extends JFrame {
             hardwareId.setHorizontalAlignment(JTextField.CENTER);
             list.add(hardwareId, c);
 
-            if (teamName.contains("RED")) {
+            if (teamName.contains("RED")) 
+            {
                 redPlayerId.add(playerId);
                 redPlayerName.add(name);
                 redPlayerHwId.add(hardwareId);
-            } else {
+            } 
+            else
+            {
                 greenPlayerId.add(playerId);
                 greenPlayerName.add(name);
                 greenPlayerHwId.add(hardwareId);
@@ -812,7 +837,7 @@ public class Gui extends JFrame {
             gameCountdownTimer.stop();
         }
 
-        gameCountdownTimer = new Timer(1000, e -> { //this is a funky new thing i found out about
+        gameCountdownTimer = new Timer(1000, e -> {
             secondsRemaining--;
             countdownLabel.setText(String.valueOf(secondsRemaining));
 
@@ -821,7 +846,7 @@ public class Gui extends JFrame {
                 gameCountdownTimer.stop();
                 transitionToGame();
             }
-        }); // <---
+        });
 
         gameCountdownTimer.start();
     }
@@ -842,14 +867,12 @@ public class Gui extends JFrame {
 
         cardLayout.show(mainPanel, "COUNTDOWN");
 
-        //start 5 second countDown
-        startCountdownTimer(5);
-
-        //actionDisplay.setText("Game Started. Waiting for data...\n");
+        startCountdownTimer(30);
     }
 
-    //STARTGAME BASICALLY MOVED TO HERE :) -Matt
-    private void transitionToGame() {
+    // STARTGAME BASICALLY MOVED TO HERE :) -Matt
+    private void transitionToGame() 
+    {
         cardLayout.show(mainPanel, "GAME");
 
         redPlayerScores.clear();

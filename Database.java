@@ -1,25 +1,22 @@
 import java.sql.DriverManager;
 import java.sql.Connection;
-//import java.sql.Driver;
-//import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-// below two line are  added to test forcing a connection over local vs the current TCP/IP connection using ipv4 or ipv6
+
+// socket factory allows for the gui to connect over a local connection to avoid issues that occurred with some virtual machines receiving a password authentication error
 import org.newsclub.net.unix.AFUNIXSocketFactory;
 import java.util.Properties;
-
-//developed by Bright Rupp, the one and only :3 UwU
 
 public class Database {
     private Connection connection;
 
-    //for dumb reasons, I couldn't handle the SQLException in the constructor, so you'll need to use try-catch when you call Database()
+    // you'll need to use try-catch when you call Database(), can't write the constructor without a thrown exception
     Database() throws SQLException
     {
 		try
        	{
-        	// Explicitly load the driver class
+        	// explicitly load the driver class
         	Class.forName("org.postgresql.Driver");
     	}
        	catch (ClassNotFoundException e)
@@ -27,6 +24,7 @@ public class Database {
         	System.err.println("PostgreSQL JDBC Driver not found. Add the JAR to your classpath!");
         	e.printStackTrace();
     	}
+        // getConnection(connection string, properties object) constructor used to be able to use the unix socket
 		Properties props = new Properties();
 		props.setProperty("user", "student");
 		props.setProperty("password", "student");
@@ -40,22 +38,22 @@ public class Database {
     {
         String qs = "SELECT id, codename FROM players WHERE id = ?";
         try (PreparedStatement query = connection.prepareStatement(qs))
-        { //apparently try statements automatically close these resources when they're in parenthesis?
+        { 
             query.setInt(1, id);
             try (ResultSet r = query.executeQuery())
             {
                 return r.next();
             }
         }
-        catch (SQLException UwU) {
+        catch (SQLException UwU) 
+        {
             UwU.printStackTrace();
             return false;
         }
     }
 
-    //takes a player id, returns the corresponding codename on the database
-    //returns null if id does not exist
-    //thus you might use queryId() first to make sure the id is there
+    // takes a player id and returns the corresponding codename on the database, returns null if id does not exist
+    // might use queryId() first to make sure the id is there
     public String getCodename(int id) throws SQLException
     {
         
@@ -75,14 +73,15 @@ public class Database {
                 }
             }
         }
-        catch (SQLException UwU) {
+        catch (SQLException UwU) 
+        {
             UwU.printStackTrace();
             return null;
         }
         
     }
 
-    //pretty self-explanatory tbh, pass in two values and add them to the database lmfao
+    // pass in two values and add them to the database
     public void insertEntry(int id, String codename)
     {
         
@@ -93,7 +92,8 @@ public class Database {
             query.setString(2, codename);
             query.executeUpdate();
         }
-        catch (SQLException UwU) {
+        catch (SQLException UwU) 
+        {
             UwU.printStackTrace();
         }
     }
@@ -107,14 +107,12 @@ public class Database {
             query.setInt(1, id);
             query.executeUpdate();
         }
-        catch (SQLException UwU) {
+        catch (SQLException UwU) 
+        {
             UwU.printStackTrace();
         }
     }
 
-    //delete an entry using its codename (could technically delete multiple
-    //  players at once if they share a codename but I added this anyway in
-    //  case you found it necessary)
     public void deleteEntryByCodename(String codename)
     {
         String qs = "DELETE FROM players where codename = ?";
@@ -123,7 +121,8 @@ public class Database {
             query.setString(1, codename);
             query.executeUpdate();
         } 
-        catch (SQLException UwU) {
+        catch (SQLException UwU) 
+        {
             UwU.printStackTrace();
         }
     }
@@ -142,7 +141,8 @@ public class Database {
             //query.setString(1, codename);
             query.executeUpdate();
         }
-        catch (SQLException UwU) {
+        catch (SQLException UwU) 
+        {
             UwU.printStackTrace();
         }
     }
