@@ -122,9 +122,10 @@ public class Gui extends JFrame {
     public void consoleLog(String message) {
         SwingUtilities.invokeLater(() -> {
             if (eventLog != null) {
+                String[] parts = message.split(":");
                 // parse message for attacker and victim ids, get their codenames from the database, and log "Attacker hit Victim" to the event log
-                String attackerHw = message[0];
-                String victimHw = message[1];
+                String attackerHw = parts[0];
+                String victimHw = parts[1];
                 processScore(attackerHw, victimHw);
                 refreshStats();
             }

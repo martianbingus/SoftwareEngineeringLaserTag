@@ -86,6 +86,9 @@ public class udpReceive implements Runnable
 				{
 					String[] parts = receivedString.split(":");
 
+                    // python script sends "AttackerID:VictimID"
+                    String victimId = parts[1];
+
                     // BROADCAST: Send the victim's equipment ID back to port 7500
                     if (sender != null) {
                         sender.send(victimId);
@@ -93,7 +96,7 @@ public class udpReceive implements Runnable
 
                     // Log to GUI for visibility
                     if (gui != null) {
-                        gui.consoleLog(parts);
+                        gui.consoleLog(receivedString);
                     }
 				}
 
