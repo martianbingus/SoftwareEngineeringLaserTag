@@ -209,8 +209,32 @@ public class Gui extends JFrame {
         else 
         {
             // check for friendly fire
-            boolean victimIsRed = isHwIdInList(victimHw, redPlayerHwId);
-            points = (isRedAttacker == victimIsRed) ? -10 : 10;
+            if (isRedAttacker) 
+            {
+                for (int i = 0; i < redPlayerHwId.size(); i++) 
+                {
+                    if (redPlayerHwId.get(i).getText().equals(victimHw)) 
+                    {
+                        points = -10; // Friendly fire penalty
+                        sender.send(attackerHw); // broadcast attacker and victim ID for friendly fire so the system can apply the penalty
+                        sender.send(victimHw);
+                        break;
+                    }
+                }
+            } 
+            else 
+            {
+                for (int i = 0; i < greenPlayerHwId.size(); i++) 
+                {
+                    if (greenPlayerHwId.get(i).getText().equals(victimHw)) 
+                    {
+                        points = -10; // Friendly fire penalty
+                        sender.send(attackerHw); // broadcast attacker and victim ID for friendly fire so the system can apply the penalty
+                        sender.send(victimHw);
+                        break;
+                    }
+                }
+            }
         }
 
         // update scores

@@ -72,6 +72,7 @@ public class udpReceive implements Runnable
 
 				// extract string, trim any white space
 				String receivedString = new String(DpReceive.getData(), 0, DpReceive.getLength()).trim();
+				receivedString = receivedString.replaceAll("[^0-9:]", ""); // clean non-numeric characters from message, except for the colon delimiter
 
 				// print data to console for visibility
 				System.out.println("Client:-" + receivedString);
