@@ -179,7 +179,25 @@ public class Gui extends JFrame {
         }
         else 
         {
-            victimName = laser.getCodename(victimHw);
+            for (int i = 0; i < redPlayerHwId.size(); i++) 
+            {
+                if (redPlayerHwId.get(i).getText().equals(victimHw)) 
+                {
+                    victimName = redPlayerName.get(i).getText();
+                    break;
+                }
+            }
+            if (victimName.equals("Unknown")) 
+            {
+                for (int i = 0; i < greenPlayerHwId.size(); i++) 
+                {
+                    if (greenPlayerHwId.get(i).getText().equals(victimHw)) 
+                    {
+                        victimName = greenPlayerName.get(i).getText();
+                        break;
+                    }
+                }
+            }
         }
 
         // determine points
