@@ -20,10 +20,12 @@ public class Gui extends JFrame {
     private ArrayList<JTextField> redPlayerId = new ArrayList<>();
     private ArrayList<JTextField> redPlayerName = new ArrayList<>();
     private ArrayList<JTextField> redPlayerHwId = new ArrayList<>();
+    private ArrayList<Integer> redPlayerScores = new ArrayList<>();
     
     private ArrayList<JTextField> greenPlayerId = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerName = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerHwId = new ArrayList<>();
+    private ArrayList<Integer> greenPlayerScores = new ArrayList<>();
 
     private Laser laser; // reference to the main Laser class
 
@@ -119,9 +121,89 @@ public class Gui extends JFrame {
     */
     public void consoleLog(String message) {
         SwingUtilities.invokeLater(() -> {
-            actionDisplay.append(message + "\n");
-            actionDisplay.setCaretPosition(actionDisplay.getDocument().getLength());
+            if (eventLog != null) {
+                // parse message for attacker and victim ids, get their codenames from the database, and log "Attacker hit Victim" to the event log
+                String attackerHw = message[0];
+                String victimHw = message[1];
+                processScore(attackerHw, victimHw);
+                refreshStats();
+            }
         });
+    }
+
+    private void processScore(String attackerHw, String victimHw) {
+        int attackerIdx = -1;
+        boolean isRedAttacker = false;
+
+        // find attacker
+        for (int i = 0; i < redPlayerHwId.size(); i++) 
+        {
+            if (redPlayerHwId.get(i).getText().equals(attackerHw)) 
+            {
+                attackerIdx = i;
+                isRedAttacker = true;
+                break;
+            }
+        }
+        if (attackerIdx == -1) 
+        {
+            for (int i = 0; i < greenPlayerHwId.size(); i++) 
+            {
+                if (greenPlayerHwId.get(i).getText().equals(attackerHw)) 
+                {
+                    attackerIdx = i;
+                    isRedAttacker = false;
+                    break;
+                }
+            }
+        }
+
+        if (attackerIdx == -1) return; // Attacker not found
+
+        // determine points
+        int points = 0;
+        if (victimHw.equals("43") || victimHw.equals("53")) 
+        {
+            points = 100; // Base hit
+        } 
+        else 
+        {
+            // check for friendly fire
+            boolean victimIsRed = isHwIdInList(victimHw, redPlayerHwId);
+            points = (isRedAttacker == victimIsRed) ? -10 : 10;
+        }
+
+        // update scores
+        if (isRedAttacker) {
+            redScores.set(attackerIdx, redScores.get(attackerIdx) + points);
+            totalRedScore += points;
+        } else {
+            greenScores.set(attackerIdx, greenScores.get(attackerIdx) + points);
+            totalGreenScore += points;
+        }
+    }
+
+    // helper to check team
+    private boolean isHwIdInList(String hwid, ArrayList<JTextField> list) {
+        for (JTextField tf : list) {
+            if (tf.getText().equals(hwid)) return true;
+        }
+        return false;
+    }
+
+    private void refreshStats() 
+    {
+        StringBuilder rs = new StringBuilder("RED TEAM: " + totalRedScore + "\n");
+        for (int i = 0; i < redScores.size(); i++) {
+            rs.append(redPlayerName.get(i).getText()).append(": ").append(redScores.get(i)).append("\n");
+        }
+        redStats.setText(rs.toString());
+
+        StringBuilder gs = new StringBuilder("GREEN TEAM: " + totalGreenScore + "\n");
+        for (int i = 0; i < greenScores.size(); i++) {
+            gs.append(greenPlayerName.get(i).getText()).append(": ").append(greenScores.get(i)).append("\n");
+        }
+        greenStats.setText(gs.toString());
     }
 
     //Screen builder methods
@@ -677,21 +759,23 @@ public class Gui extends JFrame {
 
         redStats.setText("");
         greenStats.setText("");
-        eventLog.setText("WIP, stay tuned\nfor sprint 4 :3");
+        eventLog.setText("Game Started\n");
 
         for (int i = 0; i < redPlayerName.size(); i++)
         {
             String name = redPlayerName.get(i).getText().trim();
+            String score = redPlayerScores.get(i).toString();
             if (!name.isEmpty()) {
-                redStats.append(name + "\t Score: 0\n");
+                redStats.append(name + "\t Score: " + score + "\n");
             }
         }
 
         for (int i = 0; i < greenPlayerName.size(); i++)
         {
             String name = greenPlayerName.get(i).getText().trim();
+            String score = greenPlayerScores.get(i).toString();
             if (!name.isEmpty()) {
-                greenStats.append(name + "\t Score: 0\n");
+                greenStats.append(name + "\t Score: " + score + "\n");
             }
         }
 
