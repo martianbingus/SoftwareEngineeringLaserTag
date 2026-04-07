@@ -236,6 +236,8 @@ public class Gui extends JFrame {
                     }
                 }
             }
+            // not friendly fire, normal hit
+            points = 10;
         }
 
         // update scores
@@ -253,6 +255,14 @@ public class Gui extends JFrame {
         // update event log
         eventLog.append(attackerName + " hit " + victimName + "!\n");
         eventLog.setCaretPosition(eventLog.getDocument().getLength());
+
+        System.out.println("--------------------------------------------------------------------");
+        System.out.println(attackerName + " hit " + victimName + " for " + points + " points.");
+        System.out.println("Updated Score - Red Team: " + totalRedScore + ", Green Team: " + totalGreenScore);
+        System.out.println("Attacker HW ID: " + attackerHw + ", Victim HW ID: " + victimHw);
+        System.out.println("Attacker Score: " + (isRedAttacker ? redPlayerScores.get(attackerIdx) : greenPlayerScores.get(attackerIdx)));
+        System.out.println("Red Score: " + totalRedScore + ", Green Score: " + totalGreenScore);
+        System.out.println("--------------------------------------------------------------------");
     }
 
     // helper to check team
