@@ -123,7 +123,8 @@ public class Gui extends JFrame {
     */
     public void consoleLog(String message) {
         SwingUtilities.invokeLater(() -> {
-            if (eventLog != null) {
+            if (eventLog != null) 
+            {
                 String[] parts = message.split(":");
                 // parse message for attacker and victim ids, get their codenames from the database, and log "Attacker hit Victim" to the event log
                 String attackerHw = parts[0].trim();
@@ -265,13 +266,15 @@ public class Gui extends JFrame {
     private void refreshStats() 
     {
         StringBuilder rs = new StringBuilder("RED TEAM: " + totalRedScore + "\n");
-        for (int i = 0; i < redPlayerScores.size(); i++) {
+        for (int i = 0; i < redPlayerScores.size(); i++) 
+        {
             rs.append(redPlayerName.get(i).getText()).append(": ").append(redPlayerScores.get(i)).append("\n");
         }
         redStats.setText(rs.toString());
 
         StringBuilder gs = new StringBuilder("GREEN TEAM: " + totalGreenScore + "\n");
-        for (int i = 0; i < greenPlayerScores.size(); i++) {
+        for (int i = 0; i < greenPlayerScores.size(); i++) 
+        {
             gs.append(greenPlayerName.get(i).getText()).append(": ").append(greenPlayerScores.get(i)).append("\n");
         }
         greenStats.setText(gs.toString());
