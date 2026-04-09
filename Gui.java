@@ -3,49 +3,53 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import javax.swing.*;
+import javax.sound.sampled.*;
+import java.io.File;
 
 public class Gui extends JFrame {
-    // layout Components
+
+    //Layout & UI Components
     private CardLayout cardLayout;
     private JPanel mainPanel;
-    private JTextArea actionDisplay; 
-
-    // references to the hardware classes
-    private final udpSend sender;
-    private final udpReceive receiver;
-
     private JPanel centerPanel;
+    private JTextField ipField;
 
-    // lists to hold references to the text fields for player names, player ids, and hardware ids
+    //Player Entry Fields (Red Team)
     private ArrayList<JTextField> redPlayerId = new ArrayList<>();
     private ArrayList<JTextField> redPlayerName = new ArrayList<>();
     private ArrayList<JTextField> redPlayerHwId = new ArrayList<>();
     private ArrayList<Integer> redPlayerScores = new ArrayList<>();
+    private ArrayList<JLabel> redPlayerLabels = new ArrayList<>(); //to display names/icons
     private int totalRedScore = 0;
     
+    //Player Entry Fields (Green Team)
     private ArrayList<JTextField> greenPlayerId = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerName = new ArrayList<>();
     private ArrayList<JTextField> greenPlayerHwId = new ArrayList<>();
     private ArrayList<Integer> greenPlayerScores = new ArrayList<>();
+    private ArrayList<JLabel> greenPlayerLabels = new ArrayList<>(); //to display names/icons
     private int totalGreenScore = 0;
 
-    private boolean baseHit = false; // flag to indicate if the last hit was a base hit, used to determine whether to add base icon to player panel
+    //Game Stats & Event Logging
+    private JPanel redStats;    //changed from jtextarea to jpanel
+    private JPanel greenStats;  // ""
+    private JTextArea eventLog; 
+    private JTextArea actionDisplay; 
 
-    private Laser laser; // reference to the main Laser class
+    //Networking & Logic
+    private final udpSend sender;
+    private final udpReceive receiver;
+    private Laser laser;
+    private java.util.HashSet<PlayerSync> synchronizedPlayers = new java.util.HashSet<>();
+    private boolean baseHit = false;
 
-    private JTextField ipField;
-    
-    // hashset to store hw ids sent to the system already
-	private java.util.HashSet<PlayerSync> synchronizedPlayers = new java.util.HashSet<>();
-
-    private JTextArea redStats;
-    private JTextArea greenStats;
-    private JTextArea eventLog;
-
-    // game-start countdown timer vars
+    //Timers, Music, and Assets
     private JLabel countdownLabel;
-    private Timer gameCountdownTimer;
+    private Timer gameCountdownTimer; // The 30s lead-in
+    private Timer mainGameTimer;      // The 6m game
     private int secondsRemaining;
+    private Clip musicClip;
+    private ImageIcon baseIcon = new ImageIcon(new ImageIcon("baseicon.jpg").getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH));
 
     // hashmap to store player id and score (will more than likely be needed for sprint 4)
     // private java.util.Hashmap<Integer, Integer> playerScores;
@@ -144,16 +148,18 @@ public class Gui extends JFrame {
         });
     }
 
-    private void processScore(String attackerHw, String victimHw) {
+    //UPDATED to adjust for baseicon
+    private void processScore(String attackerHw, String victimHw)
+    {
         int attackerIdx = -1;
         boolean isRedAttacker = false;
         String attackerName = "Unknown";
         String victimName = "Unknown";
 
-        // find attacker
-        for (int i = 0; i < redPlayerHwId.size(); i++) 
+        //1. Identify the Attacker and their Team
+        for (int i = 0; i < redPlayerHwId.size(); i++)
         {
-            if (redPlayerHwId.get(i).getText().equals(attackerHw)) 
+            if (redPlayerHwId.get(i).getText().equals(attackerHw))
             {
                 attackerIdx = i;
                 isRedAttacker = true;
@@ -161,11 +167,12 @@ public class Gui extends JFrame {
                 break;
             }
         }
-        if (attackerIdx == -1) 
+        
+        if (attackerIdx == -1)
         {
-            for (int i = 0; i < greenPlayerHwId.size(); i++) 
+            for (int i = 0; i < greenPlayerHwId.size(); i++)
             {
-                if (greenPlayerHwId.get(i).getText().equals(attackerHw)) 
+                if (greenPlayerHwId.get(i).getText().equals(attackerHw))
                 {
                     attackerIdx = i;
                     isRedAttacker = false;
@@ -175,35 +182,35 @@ public class Gui extends JFrame {
             }
         }
 
-        if (attackerIdx == -1) return; // Attacker not found
+        if (attackerIdx == -1) return; //stop if attacker isnt in current game
 
-        victimHw = victimHw.replaceAll("[^0-9]", ""); // clean non-numeric characters from HW ID
-        // find victim name for logging purposes
-        if (victimHw.equals("43")) 
+        //2. identify the victim
+        victimHw = victimHw.replaceAll("[^0-9]", ""); 
+        boolean isBaseHit = false;
+
+        if (victimHw.equals("43"))
         {
             victimName = "Green Base";
-            baseHit = true;
-        }
-        else if (victimHw.equals("53")) 
+            isBaseHit = true;
+        } else if (victimHw.equals("53"))
         {
             victimName = "Red Base";
-            baseHit = true;
-        }
-        else 
-        {
-            for (int i = 0; i < redPlayerHwId.size(); i++) 
+            isBaseHit = true;
+        } else {
+            //find if victim is a player
+            for (int i = 0; i < redPlayerHwId.size(); i++)
             {
-                if (redPlayerHwId.get(i).getText().equals(victimHw)) 
+                if (redPlayerHwId.get(i).getText().equals(victimHw))
                 {
                     victimName = redPlayerName.get(i).getText();
                     break;
                 }
             }
-            if (victimName.equals("Unknown")) 
+            if (victimName.equals("Unknown"))
             {
-                for (int i = 0; i < greenPlayerHwId.size(); i++) 
+                for (int i = 0; i < greenPlayerHwId.size(); i++)
                 {
-                    if (greenPlayerHwId.get(i).getText().equals(victimHw)) 
+                    if (greenPlayerHwId.get(i).getText().equals(victimHw))
                     {
                         victimName = greenPlayerName.get(i).getText();
                         break;
@@ -212,72 +219,54 @@ public class Gui extends JFrame {
             }
         }
 
-        // determine points
+        //3. scoring logic & base icon assignment
         int points = 0;
-        if (victimHw.equals("43") || victimHw.equals("53")) 
-        {
-            points = 100; // Base hit
-        } 
-        else 
-        {
-            // check for friendly fire
-            if (isRedAttacker) 
-            {
-                for (int i = 0; i < redPlayerHwId.size(); i++) 
-                {
-                    if (redPlayerHwId.get(i).getText().equals(victimHw)) 
-                    {
-                        points = -10; // Friendly fire penalty
-                        sender.send(attackerHw); // broadcast attacker and victim ID for friendly fire so the system can apply the penalty
-                        sender.send(victimHw);
-                        break;
-                    }
-                }
-            } 
-            else 
-            {
-                for (int i = 0; i < greenPlayerHwId.size(); i++) 
-                {
-                    if (greenPlayerHwId.get(i).getText().equals(victimHw)) 
-                    {
-                        points = -10; // Friendly fire penalty
-                        sender.send(attackerHw); // broadcast attacker and victim ID for friendly fire so the system can apply the penalty
-                        sender.send(victimHw);
-                        break;
-                    }
+
+        if (isBaseHit) {
+            // Check if they hit the OPPOSING base
+            if ((isRedAttacker && victimHw.equals("43")) || (!isRedAttacker && victimHw.equals("53"))) {
+                points = 100;
+                // Add the physical icon to the player's label
+                if (isRedAttacker) {
+                    redPlayerLabels.get(attackerIdx).setIcon(baseIcon);
+                } else {
+                    greenPlayerLabels.get(attackerIdx).setIcon(baseIcon);
                 }
             }
-            // not friendly fire, normal hit
-            points = 10;
+        } else {
+            //Player hit - check for Friendly Fire
+            boolean isFriendlyFire = false;
+            if (isRedAttacker) {
+                isFriendlyFire = isHwIdInList(victimHw, redPlayerHwId);
+            } else {
+                isFriendlyFire = isHwIdInList(victimHw, greenPlayerHwId);
+            }
+
+            if (isFriendlyFire) {
+                points = -10;
+                // Optionally broadcast both IDs to the system for friendly fire handling
+                sender.send(attackerHw);
+                sender.send(victimHw);
+            } else {
+                points = 10;
+            }
         }
 
-        // update scores
-        if (isRedAttacker) 
-        {
+        //4. Update Score Data
+        if (isRedAttacker) {
             redPlayerScores.set(attackerIdx, redPlayerScores.get(attackerIdx) + points);
             totalRedScore += points;
-        } 
-        else 
-        {
+        } else {
             greenPlayerScores.set(attackerIdx, greenPlayerScores.get(attackerIdx) + points);
             totalGreenScore += points;
         }
 
-        // update event log
+        //5. Update Event Log and Trigger UI Refresh
         eventLog.append(attackerName + " hit " + victimName + "!\n");
         eventLog.setCaretPosition(eventLog.getDocument().getLength());
-        // reset base hit flag after logging so the next hit will be processed normally
-        baseHit = false;
-
-        // DEBUG LOGGING
-        // System.out.println("--------------------------------------------------------------------");
-        // System.out.println(attackerName + " hit " + victimName + " for " + points + " points.");
-        // System.out.println("Updated Score - Red Team: " + totalRedScore + ", Green Team: " + totalGreenScore);
-        // System.out.println("Attacker HW ID: " + attackerHw + ", Victim HW ID: " + victimHw);
-        // System.out.println("Attacker Score: " + (isRedAttacker ? redPlayerScores.get(attackerIdx) : greenPlayerScores.get(attackerIdx)));
-        // System.out.println("Red Score: " + totalRedScore + ", Green Score: " + totalGreenScore);
-        // System.out.println("Base Hit: " + baseHit);
-        // System.out.println("--------------------------------------------------------------------");
+        
+        //call the method to update the label text with new scores
+        refreshStats();
     }
 
     // helper to check team
@@ -288,21 +277,37 @@ public class Gui extends JFrame {
         return false;
     }
 
+    //UPDATED to update the text of the labels
     private void refreshStats() 
     {
-        StringBuilder rs = new StringBuilder("RED TEAM: " + totalRedScore + "\n");
-        for (int i = 0; i < redPlayerScores.size(); i++) 
+        //Update Red Team individual labels
+        for (int i = 0; i < redPlayerLabels.size(); i++) 
         {
-            rs.append(redPlayerName.get(i).getText()).append(": ").append(redPlayerScores.get(i)).append("\n");
+            redPlayerLabels.get(i).setText(redPlayerName.get(i).getText() + "    " + redPlayerScores.get(i));
         }
-        redStats.setText(rs.toString());
 
-        StringBuilder gs = new StringBuilder("GREEN TEAM: " + totalGreenScore + "\n");
-        for (int i = 0; i < greenPlayerScores.size(); i++) 
+        //Update Green Team individual labels
+        for (int i = 0; i < greenPlayerLabels.size(); i++) 
         {
-            gs.append(greenPlayerName.get(i).getText()).append(": ").append(greenPlayerScores.get(i)).append("\n");
+            greenPlayerLabels.get(i).setText(greenPlayerName.get(i).getText() + "    " + greenPlayerScores.get(i));
         }
-        greenStats.setText(gs.toString());
+
+        //Update the Border Titles to show the cumulative team scores
+        redStats.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(Color.RED, 1), 
+            "RED TEAM TOTAL: " + totalRedScore, 
+            2, 2, new Font("Monospaced", Font.BOLD, 18), Color.RED));
+
+        greenStats.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(Color.GREEN, 1), 
+            "GREEN TEAM TOTAL: " + totalGreenScore, 
+            2, 2, new Font("Monospaced", Font.BOLD, 18), Color.GREEN));
+
+        //Force the UI to refresh the new text/icons
+        redStats.revalidate();
+        greenStats.revalidate();
+        redStats.repaint();
+        greenStats.repaint();
     }
 
     //Screen builder methods
@@ -508,40 +513,39 @@ public class Gui extends JFrame {
     }
 
     // used thrice to build the Game Action Screen
-    private JPanel createStatBox(String title, Color borderColor) 
+    private JPanel createStatBox(String title, Color borderColor)
     {
         JPanel box = new JPanel(new BorderLayout());
         box.setBackground(Color.BLACK);
-        
         box.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(borderColor, 2), 
-            title,
-            javax.swing.border.TitledBorder.CENTER,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Monospaced", Font.BOLD, 16),
-            borderColor
-        ));
+            BorderFactory.createLineBorder(borderColor, 2), title, 2, 2, 
+            new Font("Monospaced", Font.BOLD, 16), borderColor));
 
-        JTextArea textArea = new JTextArea();
-        textArea.setEditable(false);
-        textArea.setBackground(Color.BLACK);
-        textArea.setForeground(borderColor);
-        textArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        JPanel listPanel = new JPanel();
+        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+        listPanel.setBackground(Color.BLACK);
 
-        if (title.equals("RED TEAM")) 
+        if (title.equals("RED TEAM"))
         {
-            redStats = textArea;
-        } 
-        else if (title.equals("GREEN TEAM")) 
-        {
-            greenStats = textArea;
+            redStats = listPanel;
         }
+
+        else if (title.equals("GREEN TEAM"))
+        {
+            greenStats = listPanel;
+        }
+
         else
         {
-            eventLog = textArea;
+            eventLog = new JTextArea();
+            eventLog.setEditable(false);
+            eventLog.setBackground(Color.BLACK);
+            eventLog.setForeground(borderColor);
+            box.add(new JScrollPane(eventLog), BorderLayout.CENTER);
+            return box;
         }
 
-        box.add(new JScrollPane(textArea), BorderLayout.CENTER);
+        box.add(new JScrollPane(listPanel), BorderLayout.CENTER);
         return box;
     }
 
@@ -832,12 +836,10 @@ public class Gui extends JFrame {
         secondsRemaining = duration;
         countdownLabel.setText(String.valueOf(secondsRemaining));
 
-        if (gameCountdownTimer != null && gameCountdownTimer.isRunning())
-        {
-            gameCountdownTimer.stop();
-        }
+        if (gameCountdownTimer != null) gameCountdownTimer.stop();
 
-        gameCountdownTimer = new Timer(1000, e -> {
+        gameCountdownTimer = new Timer(1000, e ->
+        {
             secondsRemaining--;
             countdownLabel.setText(String.valueOf(secondsRemaining));
 
@@ -847,7 +849,6 @@ public class Gui extends JFrame {
                 transitionToGame();
             }
         });
-
         gameCountdownTimer.start();
     }
 
@@ -860,6 +861,43 @@ public class Gui extends JFrame {
         for (JTextField tf : greenPlayerHwId) tf.setText("");
     }
 
+
+
+    // NEW MUSIC LOGIC - MATT
+    private void playRandomTrack()
+    {
+        try
+        {
+            File folder = new File("photon_tracks");
+            File[] tracks = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".wav"));
+            
+            if (tracks != null && tracks.length > 0)
+            {
+                File selected = tracks[new java.util.Random().nextInt(tracks.length)];
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(selected);
+                musicClip = AudioSystem.getClip();
+                musicClip.open(audioStream);
+                musicClip.start();
+                musicClip.loop(Clip.LOOP_CONTINUOUSLY); //play music till game end
+                System.out.println("Playing music: " + selected.getName());
+            }
+        }
+        catch (Exception e)
+        {
+            System.err.println("Audio Error: " + e.getMessage());
+        }
+    }
+
+    // no mo music :(
+    private void stopMusic()
+    {
+        if (musicClip != null && musicClip.isRunning())
+        {
+            musicClip.stop();
+            musicClip.close();
+        }
+    }
+
     private void startGame() {
         // update ip target based on input
         String ipInput = this.ipField.getText().trim();
@@ -870,32 +908,90 @@ public class Gui extends JFrame {
         startCountdownTimer(30);
     }
 
-    // STARTGAME BASICALLY MOVED TO HERE :) -Matt
-    private void transitionToGame() 
+
+
+    // Adjusted logic here to account for game timer and baseicon -Matt
+    private void transitionToGame()
     {
         cardLayout.show(mainPanel, "GAME");
+        sender.send("202");
+        playRandomTrack();
 
+        redStats.removeAll();
+        greenStats.removeAll();
+        redPlayerLabels.clear();
+        greenPlayerLabels.clear();
         redPlayerScores.clear();
         greenPlayerScores.clear();
-        totalRedScore = 0;
-        totalGreenScore = 0;
 
-        for (JTextField tf : redPlayerName)
+        // Setup Red Team Labels
+        for (JTextField f : redPlayerName)
         {
-            if (!tf.getText().trim().isEmpty())
+            if (!f.getText().isEmpty())
             {
+                JLabel label = new JLabel(f.getText() + "    0");
+                label.setForeground(Color.RED);
+                label.setFont(new Font("Monospaced", Font.BOLD, 14));
+                redStats.add(label);
+                redPlayerLabels.add(label);
                 redPlayerScores.add(0);
             }
         }
-        for (JTextField tf : greenPlayerName)
+
+        // Setup Green Team Labels
+        for (JTextField f : greenPlayerName)
         {
-            if (!tf.getText().trim().isEmpty())
+            if (!f.getText().isEmpty())
             {
+                JLabel label = new JLabel(f.getText() + "    0");
+                label.setForeground(Color.GREEN);
+                label.setFont(new Font("Monospaced", Font.BOLD, 14));
+                greenStats.add(label);
+                greenPlayerLabels.add(label);
                 greenPlayerScores.add(0);
             }
         }
 
-        refreshStats();
-        sender.send("202"); //Send Start Code after countdown finishes
+        redStats.revalidate();
+        greenStats.revalidate();
+        totalRedScore = 0;
+        totalGreenScore = 0;
+        refreshStats(); 
+    
+        startMainGameTimer(360);
+    }
+
+
+    private void startMainGameTimer(int duration)
+    {
+        secondsRemaining = duration;
+        
+        mainGameTimer = new Timer(1000, e ->
+        {
+            secondsRemaining--;
+            int mins = secondsRemaining / 60;
+            int secs = secondsRemaining % 60;
+            
+            eventLog.setText("TIME REMAINING: " + String.format("%02d:%02d", mins, secs) + "\n");
+
+            if (secondsRemaining <= 0)
+            {
+                mainGameTimer.stop();
+                stopMusic();      //music stops at 0
+                sender.send("221"); //stop code
+                eventLog.append(">>> GAME OVER <<<");
+            }
+        });
+        mainGameTimer.start();
+    }
+
+
+    // Call this from udpReceive.java for base hits!
+    public void handleBaseHit(String attackerId)
+    {
+        SwingUtilities.invokeLater(() ->
+        {
+            eventLog.append("Base Capture by: " + attackerId + "\n");
+        });
     }
 }
