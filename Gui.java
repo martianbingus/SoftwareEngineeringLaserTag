@@ -152,9 +152,12 @@ public class Gui extends JFrame {
     private void processScore(String attackerHw, String victimHw)
     {
         int attackerIdx = -1;
+	int defenderIdx = -1;
         boolean isRedAttacker = false;
+	boolean isRedDefender = false;
         String attackerName = "Unknown";
         String victimName = "Unknown";
+	boolean isFriendlyFire = false;
 
         //1. Identify the Attacker and their Team
         for (int i = 0; i < redPlayerHwId.size(); i++)
@@ -203,6 +206,8 @@ public class Gui extends JFrame {
                 if (redPlayerHwId.get(i).getText().equals(victimHw))
                 {
                     victimName = redPlayerName.get(i).getText();
+		    defenderIdx = i;
+		    isRedDefender = true;
                     break;
                 }
             }
@@ -213,6 +218,8 @@ public class Gui extends JFrame {
                     if (greenPlayerHwId.get(i).getText().equals(victimHw))
                     {
                         victimName = greenPlayerName.get(i).getText();
+			defenderIdx = i;
+			isRedDefender = false;
                         break;
                     }
                 }
@@ -235,7 +242,6 @@ public class Gui extends JFrame {
             }
         } else {
             //Player hit - check for Friendly Fire
-            boolean isFriendlyFire = false;
             if (isRedAttacker) {
                 isFriendlyFire = isHwIdInList(victimHw, redPlayerHwId);
             } else {
@@ -260,6 +266,20 @@ public class Gui extends JFrame {
             greenPlayerScores.set(attackerIdx, greenPlayerScores.get(attackerIdx) + points);
             totalGreenScore += points;
         }
+	// update scores for friendly fire
+	if (isFriendlyFire)
+	{
+		if (isRedDefender)
+		{
+			redPlayerScores.set(defenderIdx, redPlayerScores.get(defenderIdx) + points);
+			totalRedScore += points;
+		}
+		else
+		{
+			greenPlayerScores.set(defenderIdx, greenPlayerScores.get(defenderIdx) + points);
+			totalGreenScore += points;
+		}
+	}
 
         //5. Update Event Log and Trigger UI Refresh
         eventLog.append(attackerName + " hit " + victimName + "!\n");
@@ -905,7 +925,7 @@ public class Gui extends JFrame {
 
         cardLayout.show(mainPanel, "COUNTDOWN");
 
-        startCountdownTimer(30);
+        startCountdownTimer(5);
     }
 
 
