@@ -47,6 +47,7 @@ public class Gui extends JFrame {
 
     //Timers, Music, and Assets
     private JLabel countdownLabel;
+    private Timer iLikeKissingBoysUwU;
     private Timer gameCountdownTimer; // The 30s lead-in
     private Timer mainGameTimer;      // The 6m game
     private int secondsRemaining;
@@ -857,12 +858,14 @@ public class Gui extends JFrame {
 
     private void startCountdownTimer(int duration)
     {
+        playRandomTrack();
+        countdownLabel.setText("");
         secondsRemaining = duration;
-        countdownLabel.setText(String.valueOf(secondsRemaining));
+        //countdownLabel.setText(String.valueOf(secondsRemaining));
 
         if (gameCountdownTimer != null) gameCountdownTimer.stop();
 
-        gameCountdownTimer = new Timer(1000, e ->
+        gameCountdownTimer = new Timer(1600, e ->
         {
             secondsRemaining--;
             countdownLabel.setText(String.valueOf(secondsRemaining));
@@ -873,7 +876,15 @@ public class Gui extends JFrame {
                 transitionToGame();
             }
         });
-        gameCountdownTimer.start();
+
+        iLikeKissingBoysUwU = new Timer(9225, e ->
+        {
+            iLikeKissingBoysUwU.stop();
+            gameCountdownTimer.start();
+            countdownLabel.setText(String.valueOf(secondsRemaining));
+        });
+
+        iLikeKissingBoysUwU.start();
     }
 
     private void clearPlayerEntries() {
