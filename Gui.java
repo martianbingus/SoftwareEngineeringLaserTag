@@ -2,6 +2,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import javax.swing.*;
 import javax.sound.sampled.*;
 import java.io.File;
@@ -35,6 +37,7 @@ public class Gui extends JFrame {
     private JPanel greenStats;  // ""
     private JTextArea eventLog; 
     private JTextArea actionDisplay; 
+    private int eventCount;
 
     //Networking & Logic
     private final udpSend sender;
@@ -45,6 +48,7 @@ public class Gui extends JFrame {
 
     //Timers, Music, and Assets
     private JLabel countdownLabel;
+    private Timer iLikeKissingBoysUwU;
     private Timer gameCountdownTimer; // The 30s lead-in
     private Timer mainGameTimer;      // The 6m game
     private int secondsRemaining;
@@ -283,6 +287,7 @@ public class Gui extends JFrame {
 
         //5. Update Event Log and Trigger UI Refresh
         eventLog.append(attackerName + " hit " + victimName + "!\n");
+        eventCount++;
         eventLog.setCaretPosition(eventLog.getDocument().getLength());
         
         //call the method to update the label text with new scores
@@ -491,7 +496,7 @@ public class Gui extends JFrame {
         warningLabel.setForeground(Color.CYAN);
         warningLabel.setFont(new Font("Monospaced", Font.BOLD, 100));
 
-        countdownLabel = new JLabel("5");
+        countdownLabel = new JLabel("");
         countdownLabel.setForeground(Color.RED);
         countdownLabel.setFont(new Font("Monospaced", Font.BOLD, 100));
 
@@ -526,6 +531,7 @@ public class Gui extends JFrame {
         stopButton.addActionListener(e -> {
             sender.send("221");
             cardLayout.show(mainPanel, "ENTRY");
+            stopMusic();
         });
         panel.add(stopButton, BorderLayout.SOUTH);
 
@@ -853,12 +859,14 @@ public class Gui extends JFrame {
 
     private void startCountdownTimer(int duration)
     {
+        playRandomTrack();
+        countdownLabel.setText("");
         secondsRemaining = duration;
-        countdownLabel.setText(String.valueOf(secondsRemaining));
+        //countdownLabel.setText(String.valueOf(secondsRemaining));
 
         if (gameCountdownTimer != null) gameCountdownTimer.stop();
 
-        gameCountdownTimer = new Timer(1000, e ->
+        gameCountdownTimer = new Timer(1600, e ->
         {
             secondsRemaining--;
             countdownLabel.setText(String.valueOf(secondsRemaining));
@@ -869,7 +877,15 @@ public class Gui extends JFrame {
                 transitionToGame();
             }
         });
-        gameCountdownTimer.start();
+
+        iLikeKissingBoysUwU = new Timer(9225, e ->
+        {
+            iLikeKissingBoysUwU.stop();
+            gameCountdownTimer.start();
+            countdownLabel.setText(String.valueOf(secondsRemaining));
+        });
+
+        iLikeKissingBoysUwU.start();
     }
 
     private void clearPlayerEntries() {
@@ -935,7 +951,7 @@ public class Gui extends JFrame {
     {
         cardLayout.show(mainPanel, "GAME");
         sender.send("202");
-        playRandomTrack();
+        //playRandomTrack();
 
         redStats.removeAll();
         greenStats.removeAll();
@@ -992,7 +1008,25 @@ public class Gui extends JFrame {
             int mins = secondsRemaining / 60;
             int secs = secondsRemaining % 60;
             
-            eventLog.setText("TIME REMAINING: " + String.format("%02d:%02d", mins, secs) + "\n");
+            if (!eventLog.getText().isEmpty())
+            {
+                ArrayList<String> a = new ArrayList<>(Arrays.asList(eventLog.getText().split("!\n")));
+                a.set(0, "TIME REMAINING: " + String.format("%02d:%02d", mins, secs));
+                if (eventCount > 5 && a.size() > 1)
+                {
+                    a.remove(1);
+                    eventCount--;
+                }
+
+                String updatedText = String.join("!\n", a) + "!\n";
+
+                //String updatedText = "TIME REMAINING: " + String.format("%02d:%02d", mins, secs) + "!"+a[1];
+                eventLog.setText(updatedText);
+            }
+            else
+            {
+                eventLog.setText("TIME REMAINING: " + String.format("%02d:%02d", mins, secs) + "!\n");
+            }
 
             if (secondsRemaining <= 0)
             {
@@ -1012,6 +1046,7 @@ public class Gui extends JFrame {
         SwingUtilities.invokeLater(() ->
         {
             eventLog.append("Base Capture by: " + attackerId + "\n");
+            eventCount++;
         });
     }
 }
