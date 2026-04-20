@@ -1,12 +1,11 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import javax.swing.*;
 import javax.sound.sampled.*;
-import java.io.File;
+import javax.swing.*;
 
 public class Gui extends JFrame {
 
