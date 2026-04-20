@@ -859,14 +859,14 @@ public class Gui extends JFrame {
 
     private void startCountdownTimer(int duration)
     {
-        playRandomTrack();
-        countdownLabel.setText("");
         secondsRemaining = duration;
-        //countdownLabel.setText(String.valueOf(secondsRemaining));
+        countdownLabel.setText(String.valueOf(secondsRemaining));
 
         if (gameCountdownTimer != null) gameCountdownTimer.stop();
 
-        gameCountdownTimer = new Timer(1600, e ->
+        int INTERVAL = 1000;
+
+        gameCountdownTimer = new Timer(INTERVAL, e ->
         {
             secondsRemaining--;
             countdownLabel.setText(String.valueOf(secondsRemaining));
@@ -878,14 +878,14 @@ public class Gui extends JFrame {
             }
         });
 
-        iLikeKissingBoysUwU = new Timer(9225, e ->
+        iLikeKissingBoysUwU = new Timer(INTERVAL * duration - 17225, e ->
         {
             iLikeKissingBoysUwU.stop();
-            gameCountdownTimer.start();
-            countdownLabel.setText(String.valueOf(secondsRemaining));
+            playRandomTrack();
         });
 
         iLikeKissingBoysUwU.start();
+        gameCountdownTimer.start();
     }
 
     private void clearPlayerEntries() {
@@ -941,7 +941,7 @@ public class Gui extends JFrame {
 
         cardLayout.show(mainPanel, "COUNTDOWN");
 
-        startCountdownTimer(5);
+        startCountdownTimer(30);
     }
 
 
